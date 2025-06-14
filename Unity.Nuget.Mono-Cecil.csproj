@@ -41,7 +41,7 @@
     <ImplicitlyExpandDesignTimeFacades>false</ImplicitlyExpandDesignTimeFacades>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="Library/PackageCache/com.unity.nuget.mono-cecil@e899d8bace39/Tests/Editor/Unity.Nuget.Mono-Cecil.EditorTests.asmdef" />
+    <None Include="Library/PackageCache/com.unity.nuget.mono-cecil@d78732e851eb/Tests/Editor/Unity.Nuget.Mono-Cecil.Editor.Tests.asmdef" />
     <Reference Include="UnityEngine">
       <HintPath>/Applications/Unity/Hub/Editor/6000.0.47f1/Unity.app/Contents/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>

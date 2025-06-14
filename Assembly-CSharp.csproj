@@ -213,7 +213,7 @@
     <None Include="Library/PackageCache/com.unity.ide.rider@7d01a2258732/ValidationExceptions.json" />
     <None Include="Library/PackageCache/com.unity.test-framework@388540dd9ce6/package.json" />
     <None Include="Assets/Epic Toon FX/Shaders/ETFX_PowerboxLit.shader" />
-    <None Include="Library/PackageCache/com.unity.nuget.mono-cecil@e899d8bace39/package.json" />
+    <None Include="Library/PackageCache/com.unity.nuget.mono-cecil@d78732e851eb/package.json" />
     <None Include="Library/PackageCache/com.unity.postprocessing@026b2a0827a4/package.json" />
     <None Include="Library/PackageCache/com.unity.performance.profile-analyzer@a68e7bc84997/package.json" />
     <None Include="Assets/Photon/Fusion/release_history.txt" />
