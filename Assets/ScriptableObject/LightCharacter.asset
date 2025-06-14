@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bc30f5417d247379caeabd50020fcb0, type: 3}
+  m_Name: LightCharacter
+  m_EditorClassIdentifier: 
+  moveSpeed: 10
+  sprintSpeed: 12
+  maxStamina: 3
+  staminaRegenRate: 2
+  staminaRegenDelay: 1
+  dodgeSpeed: 50
+  sprintDodgeMultiplier: 1.2
+  dodgeCooldown: 1
+  baseThrowForce: 20
+  maxChargeThrowMultiplier: 2
+  throwChargeSpeed: 1
+  pickThrowCooldown: 1.5
+  parryDuration: 1
+  failStunDuration: 0.5
+  parryThrowCooldown: 1.5
+  tackleRange: 2
+  tackleForce: 20
+  tackleCooldown: 1.5
+  tackleStunDuration: 1
+  passive: 0
