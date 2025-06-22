@@ -3,6 +3,7 @@ using UnityEngine;
 using Game.Ball;
 using Game.AnimationControl;
 using Game.GameUI;
+using Game.AI;
 
 namespace Game.Abilities
 {
@@ -11,8 +12,15 @@ namespace Game.Abilities
         private BallController mHeldBall;
         private float mCharge;
         private float mHoldDelayTimer;
+        private bool mIsNPC;
 
         private const float PickupThrowDelay = 0.5f;
+
+        public override void Spawned()
+        {
+            base.Spawned();
+            mIsNPC = GetComponent<NetworkedNPCControllerNew>() != null;
+        }
 
         public override void HandleInput()
         {
@@ -24,6 +32,30 @@ namespace Game.Abilities
                 return;
             }
 
+            if (mIsNPC)
+            {
+                HandleNPCThrow();
+            }
+            else
+            {
+                HandleHumanThrow();
+            }
+        }
+
+        private void HandleNPCThrow()
+        {
+            if (Input.ButtonAPressed)
+            {
+                float force = TypeData.baseThrowForce * 1.5f; // Medium charge for NPCs
+                RPC_ThrowBall(force);
+                
+                mCharge = 0f;
+                mHeldBall = null;
+            }
+        }
+
+        private void HandleHumanThrow()
+        {
             if (Input.ButtonAHeld)
             {
                 mCharge += TypeData.throwChargeSpeed * Runner.DeltaTime;

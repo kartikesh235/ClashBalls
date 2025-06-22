@@ -7,9 +7,11 @@ namespace Game.Abilities
 {
     public class PickUpAbility : BaseAbility
     {
+        [Networked] public bool HasBall { get; private set; }
+
         public override void HandleInput()  
         {
-            if (!HasStateAuthority || !Input.ButtonAPressed) return;
+            if (!HasStateAuthority || !Input.ButtonAPressed || HasBall) return;
 
             float radius = 4f;
             var physicsScene = Runner.GetPhysicsScene();
@@ -24,6 +26,7 @@ namespace Game.Abilities
                 {
                     GetComponent<PlayerAnimation>().SetHandSubState(HandSubState.Pickup);
                     ball.PickUp(gameObject);
+                    HasBall = true;
                     
                     var throwAbility = GetComponent<ThrowAbility>();
                     if (throwAbility != null)
@@ -33,6 +36,11 @@ namespace Game.Abilities
                     break;
                 }
             }
+        }
+
+        public void OnBallThrown()
+        {
+            HasBall = false;
         }
 
         private void OnDrawGizmosSelected()

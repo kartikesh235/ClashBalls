@@ -6,8 +6,12 @@ namespace Game.Character
     public class CharacterStats : MonoBehaviour
     {
         public float CurrentStamina { get; private set; }
+        public float MaxStamina => typeData?.maxStamina ?? 3f;
+        public float StaminaRatio => CurrentStamina / MaxStamina;
+        
         private CharacterTypeSO typeData;
         private Coroutine regenCoroutine;
+        
         public float currentStamina => CurrentStamina;
 
         public void Initialize(CharacterTypeSO data)
@@ -28,6 +32,11 @@ namespace Game.Character
         public void RecoverStamina(float amount)
         {
             CurrentStamina = Mathf.Min(CurrentStamina + amount, typeData.maxStamina);
+        }
+
+        public bool HasStamina(float amount)
+        {
+            return CurrentStamina >= amount;
         }
 
         private IEnumerator RegenDelay()
