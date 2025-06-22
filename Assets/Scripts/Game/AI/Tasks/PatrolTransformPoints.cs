@@ -89,7 +89,7 @@ namespace Game.AI.Tasks
 
             // Set movement direction towards current target
             Vector3 direction = (currentTarget.Value - transform.position).normalized;
-            moveDirection.Value = new Vector2(direction.x, direction.z) * patrolSpeed.Value;
+            moveDirection.Value = new Vector2(direction.x, direction.z) * 7;
 
             return TaskStatus.Running;
         }
