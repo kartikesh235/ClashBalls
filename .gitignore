@@ -6,4 +6,10 @@
 .idea/
 .vscode/
 *.swp
+# Unity Temp files
+Temp/
+
+# Unity Logs
+Logs/
+*.log
 
