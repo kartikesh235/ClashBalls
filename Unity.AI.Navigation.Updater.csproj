@@ -480,11 +480,17 @@
     <Reference Include="Photon3Unity3D">
       <HintPath>/Users/garena/Documents/My Project/My project (1)/Assets/Photon/PhotonLibs/netstandard2.0/Photon3Unity3D.dll</HintPath>
     </Reference>
+    <Reference Include="BehaviorDesigner.Runtime">
+      <HintPath>/Users/garena/Documents/My Project/My project (1)/Assets/Behavior Designer/Runtime/BehaviorDesigner.Runtime.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.VisualScripting.TextureAssets">
       <HintPath>/Users/garena/Documents/My Project/My project (1)/Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/EditorAssetResources/Unity.VisualScripting.TextureAssets.dll</HintPath>
     </Reference>
     <Reference Include="Fusion.Realtime">
       <HintPath>/Users/garena/Documents/My Project/My project (1)/Assets/Photon/Fusion/Assemblies/Fusion.Realtime.dll</HintPath>
+    </Reference>
+    <Reference Include="BehaviorDesigner.Editor">
+      <HintPath>/Users/garena/Documents/My Project/My project (1)/Assets/Behavior Designer/Editor/BehaviorDesigner.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Android.Types">
       <HintPath>/Applications/Unity/Hub/Editor/6000.0.47f1/PlaybackEngines/AndroidPlayer/Unity.Android.Types.dll</HintPath>

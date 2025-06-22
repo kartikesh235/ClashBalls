@@ -17,7 +17,7 @@ MonoBehaviour:
   maxStamina: 3
   staminaRegenRate: 1
   staminaRegenDelay: 1
-  dodgeSpeed: 100
+  dodgeDistance: 10
   sprintDodgeMultiplier: 1.5
   dodgeCooldown: 1
   baseThrowForce: 20
@@ -27,7 +27,7 @@ MonoBehaviour:
   parryDuration: 1
   failStunDuration: 0.5
   parryThrowCooldown: 1.5
-  tackleRange: 2
+  tackeTravelDistance: 10
   tackleForce: 40
   tackleCooldown: 1.5
   tackleStunDuration: 1

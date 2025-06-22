@@ -25,6 +25,7 @@ namespace Game.Abilities
         private void Awake()
         {
             mRb = GetComponent<Rigidbody>();
+            mTravelDistance = TypeData.tackeTravelDistance;
         }
 
         public override void FixedUpdateNetwork()
@@ -48,10 +49,7 @@ namespace Game.Abilities
 
         private bool CanStartTackle()
         {
-            return HasStateAuthority &&
-                   Input.ButtonDPressed &&
-                   mCooldownTimer <= 0f &&
-                   !mIsTackling;
+            return HasStateAuthority && Input.ButtonDPressed && mCooldownTimer <= 0f && !mIsTackling;
         }
 
         private void StartTackle()
@@ -149,7 +147,7 @@ namespace Game.Abilities
         {
             var rb = target.GetComponent<Rigidbody>();
             if (rb != null)
-                rb.AddForce(direction * hitOpponentForce, ForceMode.VelocityChange);
+                rb.AddForce(direction * TypeData.tackleForce, ForceMode.VelocityChange);
         }
 
         private void DisableOpponentMovement(NetworkObject target)
@@ -176,7 +174,13 @@ namespace Game.Abilities
         private void RPC_DisableMovement(NetworkObject target)
         {
             var pm = target.GetComponent<PlayerMovement>();
-            if (pm == null) return;
+            var parry = target.GetComponent<ParryAbility>();
+            // also check if the tagret is has not activated parry state
+            if (pm == null || parry.IsParrying())
+                return;
+           
+            if (pm == null) 
+                return;
 
             pm.enabled = false;
             target.GetComponent<TackleAbility>().RunnerInvokeEnable(pm, TypeData.tackleStunDuration);

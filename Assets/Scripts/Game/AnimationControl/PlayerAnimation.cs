@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace Game.AnimationControl
 {
-  
     public enum PlayerAnimState
     {
         Locomotion = 0,

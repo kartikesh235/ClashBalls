@@ -15,7 +15,7 @@ namespace Game.Character
         public float staminaRegenDelay = 1f;
         
         [Header("Dodge")]
-        public float dodgeSpeed = 10f;
+        public float dodgeDistance = 10f;
         public float sprintDodgeMultiplier = 1.5f;
         public float dodgeCooldown = 1f;
 
@@ -31,7 +31,7 @@ namespace Game.Character
         public float parryThrowCooldown = 1.5f;
         
         [Header("Tackle / Offensive Slide")]
-        public float tackleRange = 2f;
+        public float tackeTravelDistance = 2f;
         public float tackleForce = 20f;
         public float tackleCooldown = 1.5f;
         public float tackleStunDuration = 1f;

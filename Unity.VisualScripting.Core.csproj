@@ -208,8 +208,8 @@
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Runtime/VisualScripting.Core/Graphs/IGraph.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Runtime/VisualScripting.Core/Reflection/Operators/OrHandler.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Runtime/VisualScripting.Core/EditorBinding/NullMeansSelfAttribute.cs" />
-    <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Runtime/VisualScripting.Core/Connections/IConnection.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Runtime/VisualScripting.Core/Dependencies/FullSerializer/Converters/Unity/InputAction_DirectConverter.cs" />
+    <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Runtime/VisualScripting.Core/Connections/IConnection.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Runtime/VisualScripting.Core/Reflection/Operators/EqualityHandler.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Runtime/VisualScripting.Core/Reflection/Optimization/Func_6.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Runtime/VisualScripting.Core/Dependencies/FullSerializer/Internal/fsCyclicReferenceManager.cs" />
@@ -403,8 +403,8 @@
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Runtime/VisualScripting.Core/Reflection/Member.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Runtime/VisualScripting.Core/Collections/IProxyableNotifyCollectionChanged.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Runtime/VisualScripting.Core/Collections/DebugDictionary.cs" />
-    <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Runtime/VisualScripting.Core/Reflection/Optimization/StaticActionInvoker_0.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Runtime/VisualScripting.Core/Events/IEventGraph.cs" />
+    <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Runtime/VisualScripting.Core/Reflection/Optimization/StaticActionInvoker_0.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Runtime/VisualScripting.Core/Dependencies/FullSerializer/fsDirectConverter.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Runtime/VisualScripting.Core/Listeners/UIInterfaces/UnityOnSubmitMessageListener.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Runtime/VisualScripting.Core/Events/IEventMachine.cs" />
@@ -887,11 +887,17 @@
     <Reference Include="Photon3Unity3D">
       <HintPath>/Users/garena/Documents/My Project/My project (1)/Assets/Photon/PhotonLibs/netstandard2.0/Photon3Unity3D.dll</HintPath>
     </Reference>
+    <Reference Include="BehaviorDesigner.Runtime">
+      <HintPath>/Users/garena/Documents/My Project/My project (1)/Assets/Behavior Designer/Runtime/BehaviorDesigner.Runtime.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.VisualScripting.TextureAssets">
       <HintPath>/Users/garena/Documents/My Project/My project (1)/Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/EditorAssetResources/Unity.VisualScripting.TextureAssets.dll</HintPath>
     </Reference>
     <Reference Include="Fusion.Realtime">
       <HintPath>/Users/garena/Documents/My Project/My project (1)/Assets/Photon/Fusion/Assemblies/Fusion.Realtime.dll</HintPath>
+    </Reference>
+    <Reference Include="BehaviorDesigner.Editor">
+      <HintPath>/Users/garena/Documents/My Project/My project (1)/Assets/Behavior Designer/Editor/BehaviorDesigner.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Android.Types">
       <HintPath>/Applications/Unity/Hub/Editor/6000.0.47f1/PlaybackEngines/AndroidPlayer/Unity.Android.Types.dll</HintPath>

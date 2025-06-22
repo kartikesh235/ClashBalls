@@ -30,6 +30,7 @@ namespace Game.Abilities
             mRigidbody.linearDamping = 0f;
             mRigidbody.angularDamping = 0f;
             mRigidbody.constraints = RigidbodyConstraints.FreezeRotation;
+            mDodgeDistance = TypeData.dodgeDistance;
         }
 
         public override void FixedUpdateNetwork()
@@ -84,6 +85,12 @@ namespace Game.Abilities
             // Set cooldown
             mDodgeCooldownTimer = TypeData.dodgeCooldown;
 
+            // if joysticks are not at 0,0, multiply the travelDistance with the TypeData.sprintDodgeMultiplier
+            if (Input.Movement != Vector2.zero)
+            {
+                travelDistance *= TypeData.sprintDodgeMultiplier;
+            }
+            
             // Execute dodge via RPC
             RPC_DoDodge(dodgeDir, travelDistance);
         }
@@ -94,6 +101,8 @@ namespace Game.Abilities
             mIsDodging = true;
             mDodgeTimer = 0f;
             mDodgeDirection = direction;
+            
+            
 
             // Compute acceleration to cover distance in given duration: d = 0.5 * a * t^2 => a = 2*d / t^2
             mRequiredAcceleration = 2f * travelDistance / (mDodgeDuration * mDodgeDuration);

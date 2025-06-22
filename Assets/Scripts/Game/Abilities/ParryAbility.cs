@@ -35,7 +35,11 @@ namespace Game.Abilities
                 mIsParrying = true;
                 mTimer = TypeData.parryDuration;
                 
-                //GetComponent<PlayerAnimation>().SetState(PlayerAnimState.Parry);
+                GetComponent<PlayerAnimation>().SetState(PlayerAnimState.Parry);
+                StartCoroutine(ExtraUtils.SetDelay(0.5f, () =>
+                {
+                    GetComponent<PlayerAnimation>().SetState(PlayerAnimState.Locomotion);
+                }));
             }
         }
 
@@ -63,5 +67,9 @@ namespace Game.Abilities
                 move.enabled = true;
         }
 
+        public bool IsParrying()
+        {
+            return mIsParrying;
+        }
     }
 }

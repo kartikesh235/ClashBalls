@@ -22,7 +22,7 @@ AssetImportWorker0
 -logFile
 Logs/AssetImportWorker0.log
 -srvPort
-52105
+55401
 -job-worker-count
 5
 -background-job-worker-count
@@ -68,7 +68,7 @@ Successfully changed project path to: /Users/garena/Documents/My Project/My proj
     "memorysetup-temp-allocator-size-gfx=262144"
 Player connection [8732379200]  Target information:
 
-Player connection [8732379200]  * "[IP] 192.168.185.35 [Port] 0 [Flags] 2 [Guid] 258093424 [EditorId] 258093424 [Version] 1048832 [Id] OSXEditor(0,Kartikeshs-MacBook-Pro.local) [Debug] 1 [PackageName] OSXEditor [ProjectName] Editor" 
+Player connection [8732379200]  * "[IP] 192.168.2.35 [Port] 0 [Flags] 2 [Guid] 2301645476 [EditorId] 2301645476 [Version] 1048832 [Id] OSXEditor(0,Kartikeshs-MacBook-Pro.local) [Debug] 1 [PackageName] OSXEditor [ProjectName] Editor" 
 
 Player connection [8732379200] Host joined multi-casting on [225.0.0.222:54997]...
 Player connection [8732379200] Host joined alternative multi-casting on [225.0.0.222:34997]...
@@ -83,7 +83,7 @@ Library Redirect Path: Library/
 [Physics::Module] SDK Version: 4.1.2
 [Physics::Module] Integration Version: 1.0.0
 [Physics::Module] Threading Mode: Multi-Threaded
-Refreshing native plugins compatible for Editor in 6.35 ms, found 3 plugins.
+Refreshing native plugins compatible for Editor in 4.26 ms, found 3 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
 Initialize engine version: 6000.0.47f1 (2ad1ed33fd3b)
 [Subsystems] Discovering subsystems at path /Applications/Unity/Hub/Editor/6000.0.47f1/Unity.app/Contents/Resources/UnitySubsystems
@@ -99,48 +99,48 @@ Initialize mono
 Mono path[0] = '/Applications/Unity/Hub/Editor/6000.0.47f1/Unity.app/Contents/Managed'
 Mono path[1] = '/Applications/Unity/Hub/Editor/6000.0.47f1/Unity.app/Contents/MonoBleedingEdge/lib/mono/unityjit-macos'
 Mono config path = '/Applications/Unity/Hub/Editor/6000.0.47f1/Unity.app/Contents/MonoBleedingEdge/etc'
-Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56570
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56545
 Begin MonoManager ReloadAssembly
 Registering precompiled unity dll's ...
 Register platform support module: /Applications/Unity/Hub/Editor/6000.0.47f1/Unity.app/Contents/PlaybackEngines/MacStandaloneSupport/UnityEditor.OSXStandalone.Extensions.dll
 Register platform support module: /Applications/Unity/Hub/Editor/6000.0.47f1/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
 Register platform support module: /Applications/Unity/Hub/Editor/6000.0.47f1/PlaybackEngines/AndroidPlayer/UnityEditor.Android.Extensions.dll
-Registered in 0.003401 seconds.
-- Loaded All Assemblies, in  0.240 seconds
+Registered in 0.002997 seconds.
+- Loaded All Assemblies, in  0.261 seconds
 Native extension for Android target not found
-Android Extension - Scanning For ADB Devices 73 ms
+Android Extension - Scanning For ADB Devices 67 ms
 Native extension for WindowsStandalone target not found
 Native extension for OSXStandalone target not found
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.349 seconds
-Domain Reload Profiling: 589ms
-	BeginReloadAssembly (71ms)
+- Finished resetting the current domain, in  0.329 seconds
+Domain Reload Profiling: 590ms
+	BeginReloadAssembly (95ms)
 		ExecutionOrderSort (0ms)
 		DisableScriptedObjects (0ms)
 		BackupInstance (0ms)
 		ReleaseScriptingObjects (0ms)
 		CreateAndSetChildDomain (0ms)
-	RebuildCommonClasses (24ms)
-	RebuildNativeTypeToScriptingClass (9ms)
-	initialDomainReloadingComplete (29ms)
-	LoadAllAssembliesAndSetupDomain (106ms)
-		LoadAssemblies (73ms)
+	RebuildCommonClasses (23ms)
+	RebuildNativeTypeToScriptingClass (8ms)
+	initialDomainReloadingComplete (27ms)
+	LoadAllAssembliesAndSetupDomain (107ms)
+		LoadAssemblies (100ms)
 		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (103ms)
-			TypeCache.Refresh (103ms)
-				TypeCache.ScanAssembly (94ms)
+		AnalyzeDomain (99ms)
+			TypeCache.Refresh (98ms)
+				TypeCache.ScanAssembly (89ms)
 			BuildScriptInfoCaches (0ms)
 			ResolveRequiredComponents (0ms)
-	FinalizeReload (349ms)
+	FinalizeReload (329ms)
 		ReleaseScriptCaches (0ms)
 		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (318ms)
+		SetupLoadedEditorAssemblies (298ms)
 			LogAssemblyErrors (0ms)
-			InitializePlatformSupportModulesInManaged (166ms)
-			SetLoadedEditorAssemblies (3ms)
-			BeforeProcessingInitializeOnLoad (33ms)
-			ProcessInitializeOnLoadAttributes (75ms)
-			ProcessInitializeOnLoadMethodAttributes (40ms)
+			InitializePlatformSupportModulesInManaged (155ms)
+			SetLoadedEditorAssemblies (2ms)
+			BeforeProcessingInitializeOnLoad (31ms)
+			ProcessInitializeOnLoadAttributes (70ms)
+			ProcessInitializeOnLoadMethodAttributes (39ms)
 			AfterProcessingInitializeOnLoad (0ms)
 			EditorAssembliesLoaded (0ms)
 		ExecutionOrderSort2 (0ms)
@@ -152,17 +152,17 @@ Import Worker Mode flag is 0x00
 Assembly reference Packages/com.unity.cinemachine/Editor/Samples/ExposeHDRPInternals/HDRP-Editor-ref.asmref has no target assembly definition
 Assembly reference Packages/com.unity.cinemachine/Editor/Samples/ExposeHDRPInternals/HDRP-Editor-ref.asmref has no target assembly definition
 Begin MonoManager ReloadAssembly
-Duplicate assembly 'Mono.Cecil.Pdb.dll' with different versions detected, using 'Assets/Plugins/Mono.Cecil.Pdb.dll, AssemblyName=Mono.Cecil.Pdb, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e' and ignoring 'Packages/com.unity.nuget.mono-cecil/Mono.Cecil.Pdb.dll, AssemblyName=Mono.Cecil.Pdb, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e'.Duplicate assembly 'Mono.Cecil.Rocks.dll' with different versions detected, using 'Assets/Plugins/Mono.Cecil.Rocks.dll, AssemblyName=Mono.Cecil.Rocks, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e' and ignoring 'Packages/com.unity.nuget.mono-cecil/Mono.Cecil.Rocks.dll, AssemblyName=Mono.Cecil.Rocks, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e'.Duplicate assembly 'Mono.Cecil.dll' with different versions detected, using 'Assets/Plugins/Mono.Cecil.dll, AssemblyName=Mono.Cecil, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e' and ignoring 'Packages/com.unity.nuget.mono-cecil/Mono.Cecil.dll, AssemblyName=Mono.Cecil, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e'.Duplicate assembly 'Mono.Cecil.Mdb.dll' with different versions detected, using 'Assets/Plugins/Mono.Cecil.Mdb.dll, AssemblyName=Mono.Cecil.Mdb, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e' and ignoring 'Packages/com.unity.nuget.mono-cecil/Mono.Cecil.Mdb.dll, AssemblyName=Mono.Cecil.Mdb, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e'.Symbol file LoadedFromMemory is not a mono symbol file
+Duplicate assembly 'Mono.Cecil.Pdb.dll' with different versions detected, using 'Assets/Plugins/Mono.Cecil.Pdb.dll, AssemblyName=Mono.Cecil.Pdb, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e' and ignoring 'Packages/com.unity.nuget.mono-cecil/Mono.Cecil.Pdb.dll, AssemblyName=Mono.Cecil.Pdb, Version=0.11.5.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e'.Duplicate assembly 'Mono.Cecil.Rocks.dll' with different versions detected, using 'Assets/Plugins/Mono.Cecil.Rocks.dll, AssemblyName=Mono.Cecil.Rocks, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e' and ignoring 'Packages/com.unity.nuget.mono-cecil/Mono.Cecil.Rocks.dll, AssemblyName=Mono.Cecil.Rocks, Version=0.11.5.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e'.Duplicate assembly 'Mono.Cecil.dll' with different versions detected, using 'Assets/Plugins/Mono.Cecil.dll, AssemblyName=Mono.Cecil, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e' and ignoring 'Packages/com.unity.nuget.mono-cecil/Mono.Cecil.dll, AssemblyName=Mono.Cecil, Version=0.11.5.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e'.Duplicate assembly 'Mono.Cecil.Mdb.dll' with different versions detected, using 'Assets/Plugins/Mono.Cecil.Mdb.dll, AssemblyName=Mono.Cecil.Mdb, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e' and ignoring 'Packages/com.unity.nuget.mono-cecil/Mono.Cecil.Mdb.dll, AssemblyName=Mono.Cecil.Mdb, Version=0.11.5.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e'.Symbol file LoadedFromMemory is not a mono symbol file
 Symbol file LoadedFromMemory is not a mono symbol file
 Symbol file LoadedFromMemory is not a mono symbol file
 Symbol file LoadedFromMemory is not a mono symbol file
-- Loaded All Assemblies, in  0.487 seconds
+- Loaded All Assemblies, in  0.569 seconds
 Assembly reference Packages/com.unity.cinemachine/Editor/Samples/ExposeHDRPInternals/HDRP-Editor-ref.asmref has no target assembly definition
 'Packages/com.unity.cinemachine/Editor/Obsolete/CinemachineVirtualCameraBaseEditor.cs' contains partial class of Unity.Object, exactly 1 of the partial classes needs to be in a file with the same filename. This is to know the one that can be referenced from ie. GameObjects
 'Packages/com.unity.cinemachine/Editor/Editors/CinemachineVirtualCameraBaseEditor.cs' contains partial class of Unity.Object, exactly 1 of the partial classes needs to be in a file with the same filename. This is to know the one that can be referenced from ie. GameObjects
 'Assets/Photon/Fusion/Runtime/Fusion.Unity.cs' contains partial class of Unity.Object, exactly 1 of the partial classes needs to be in a file with the same filename. This is to know the one that can be referenced from ie. GameObjects
 'Assets/Photon/Fusion/Runtime/Fusion.Unity.cs' contains partial class of Unity.Object, exactly 1 of the partial classes needs to be in a file with the same filename. This is to know the one that can be referenced from ie. GameObjects
-Refreshing native plugins compatible for Editor in 0.63 ms, found 3 plugins.
+Refreshing native plugins compatible for Editor in 0.70 ms, found 3 plugins.
 Native extension for Android target not found
 Native extension for WindowsStandalone target not found
 Native extension for OSXStandalone target not found
@@ -172,36 +172,36 @@ Package Manager log level set to [2]
 [Package Manager] Unable to send message (not connected to server process).
 [Package Manager] Cannot connect to Unity Package Manager local server
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.528 seconds
-Domain Reload Profiling: 1015ms
-	BeginReloadAssembly (79ms)
+- Finished resetting the current domain, in  0.520 seconds
+Domain Reload Profiling: 1090ms
+	BeginReloadAssembly (91ms)
 		ExecutionOrderSort (0ms)
-		DisableScriptedObjects (3ms)
+		DisableScriptedObjects (4ms)
 		BackupInstance (0ms)
 		ReleaseScriptingObjects (0ms)
-		CreateAndSetChildDomain (28ms)
-	RebuildCommonClasses (26ms)
+		CreateAndSetChildDomain (34ms)
+	RebuildCommonClasses (25ms)
 	RebuildNativeTypeToScriptingClass (9ms)
 	initialDomainReloadingComplete (14ms)
-	LoadAllAssembliesAndSetupDomain (360ms)
-		LoadAssemblies (208ms)
+	LoadAllAssembliesAndSetupDomain (431ms)
+		LoadAssemblies (274ms)
 		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (182ms)
-			TypeCache.Refresh (142ms)
-				TypeCache.ScanAssembly (128ms)
-			BuildScriptInfoCaches (22ms)
+		AnalyzeDomain (192ms)
+			TypeCache.Refresh (148ms)
+				TypeCache.ScanAssembly (131ms)
+			BuildScriptInfoCaches (26ms)
 			ResolveRequiredComponents (16ms)
-	FinalizeReload (528ms)
+	FinalizeReload (521ms)
 		ReleaseScriptCaches (0ms)
 		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (428ms)
+		SetupLoadedEditorAssemblies (422ms)
 			LogAssemblyErrors (0ms)
 			InitializePlatformSupportModulesInManaged (11ms)
 			SetLoadedEditorAssemblies (3ms)
-			BeforeProcessingInitializeOnLoad (85ms)
-			ProcessInitializeOnLoadAttributes (305ms)
+			BeforeProcessingInitializeOnLoad (84ms)
+			ProcessInitializeOnLoadAttributes (300ms)
 			ProcessInitializeOnLoadMethodAttributes (24ms)
-			AfterProcessingInitializeOnLoad (0ms)
+			AfterProcessingInitializeOnLoad (1ms)
 			EditorAssembliesLoaded (0ms)
 		ExecutionOrderSort2 (0ms)
 		AwakeInstancesAfterBackupRestoration (1ms)
@@ -210,172 +210,58 @@ Launching external process: /Applications/Unity/Hub/Editor/6000.0.47f1/Unity.app
 Launched and connected shader compiler UnityShaderCompiler after 0.03 seconds
 Refreshing native plugins compatible for Editor in 0.80 ms, found 3 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Unloading 88 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 5551 unused Assets / (1.9 MB). Loaded Objects now: 6114.
-Memory consumption went from 286.1 MB to 284.2 MB.
-Total: 5.270959 ms (FindLiveObjects: 0.468958 ms CreateObjectMapping: 0.132167 ms MarkObjects: 3.910708 ms  DeleteObjects: 0.758500 ms)
+Unloading 90 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 6119 unused Assets / (2.2 MB). Loaded Objects now: 6701.
+Memory consumption went from 220.6 MB to 218.4 MB.
+Total: 8.582375 ms (FindLiveObjects: 3.488333 ms CreateObjectMapping: 0.148833 ms MarkObjects: 3.596834 ms  DeleteObjects: 1.347916 ms)
 
 ========================================================================
-Received Import Request.
-  Time since last request: 529802.083128 seconds.
-  path: Assets/Resources
-  artifactKey: Guid(930d8ea7c30d243bf99b71b3c98470b2) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Resources using Guid(930d8ea7c30d243bf99b71b3c98470b2) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '5fec479e445bf9cbd7229d2094172513') in 0.002690917 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+Received Prepare
+Shader 'MoreMountains/MMRipple': fallback shader 'Particle/AlphaBlended' not found
+Refreshing native plugins compatible for Editor in 0.96 ms, found 3 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 13 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 13 unused Assets / (230.3 KB). Loaded Objects now: 6701.
+Memory consumption went from 195.5 MB to 195.3 MB.
+Total: 23.363792 ms (FindLiveObjects: 0.373334 ms CreateObjectMapping: 0.065458 ms MarkObjects: 22.849750 ms  DeleteObjects: 0.074875 ms)
 
+Prepare: number of updated asset objects reloaded= 0
+========================================================================
+Received Prepare
+Shader 'MoreMountains/MMRipple': fallback shader 'Particle/AlphaBlended' not found
+Refreshing native plugins compatible for Editor in 0.92 ms, found 3 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 13 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 13 unused Assets / (230.3 KB). Loaded Objects now: 6701.
+Memory consumption went from 195.5 MB to 195.3 MB.
+Total: 3.780959 ms (FindLiveObjects: 0.174959 ms CreateObjectMapping: 0.058375 ms MarkObjects: 3.507584 ms  DeleteObjects: 0.039834 ms)
+
+Prepare: number of updated asset objects reloaded= 0
 ========================================================================
 Received Import Request.
-  Time since last request: 2.493111 seconds.
-  path: Assets/Prefabs/Player 1 Network.prefab
-  artifactKey: Guid(2ba17190135004bf9924b23110f9f147) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Prefabs/Player 1 Network.prefab using Guid(2ba17190135004bf9924b23110f9f147) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '940f7c14e97f43cf0d3cea58cce5171d') in 0.345406917 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 308
-
-========================================================================
-Received Import Request.
-  Time since last request: 2799.155397 seconds.
-  path: Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_Cartwheel_Back.fbx
-  artifactKey: Guid(fe49a4ad076b3ce468f997ea7c396acf) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_Cartwheel_Back.fbx using Guid(fe49a4ad076b3ce468f997ea7c396acf) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '0b77e63dfb1d73e93b324fe1fcd29534') in 0.003111208 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 139
-
-========================================================================
-Received Import Request.
-  Time since last request: 11.607318 seconds.
-  path: Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_EvadeStep_Back.fbx
-  artifactKey: Guid(e8849e811eb77d44986dc59c6053fa5d) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_EvadeStep_Back.fbx using Guid(e8849e811eb77d44986dc59c6053fa5d) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '240796f78dfe53a21227dc9f87efab34') in 0.002064542 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 139
-
-========================================================================
-Received Import Request.
-  Time since last request: 5.251550 seconds.
-  path: Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_Float_Left.fbx
-  artifactKey: Guid(34508333fd8e2d949a5b550aa7ff674e) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_Float_Left.fbx using Guid(34508333fd8e2d949a5b550aa7ff674e) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '92634cf19d46d46c0d3266ab84ecac5a') in 0.002035208 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 139
-
-========================================================================
-Received Import Request.
-  Time since last request: 6.846349 seconds.
-  path: Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_Float_Right.fbx
-  artifactKey: Guid(a8e3fa291e3ca2e44b71d58d75d2e491) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_Float_Right.fbx using Guid(a8e3fa291e3ca2e44b71d58d75d2e491) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '5914231328c83da25568fc33e30da38b') in 0.002059666 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 139
-
-========================================================================
-Received Import Request.
-  Time since last request: 43.411324 seconds.
-  path: Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_HugeStep_Forward.fbx
-  artifactKey: Guid(520dc6aa825654e4da10945739e9f002) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_HugeStep_Forward.fbx using Guid(520dc6aa825654e4da10945739e9f002) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'a30cac9f4f0a52c8bd8ddcae8557fc1d') in 0.002154458 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 139
-
-========================================================================
-Received Import Request.
-  Time since last request: 11.312952 seconds.
-  path: Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_Roll_Forward.fbx
-  artifactKey: Guid(7b513b586fa8cd24b9ec714474170032) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_Roll_Forward.fbx using Guid(7b513b586fa8cd24b9ec714474170032) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '6d9b7a8111372d2d9aeb8daec83cbca0') in 0.002011333 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 139
-
-========================================================================
-Received Import Request.
-  Time since last request: 4.828636 seconds.
-  path: Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_SmallStep_Right.fbx
-  artifactKey: Guid(d78d8347e54bff24789b33601bfc7d29) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_SmallStep_Right.fbx using Guid(d78d8347e54bff24789b33601bfc7d29) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'd984c717627c0ea2689229c5df10bff8') in 0.001954375 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 139
-
-========================================================================
-Received Import Request.
-  Time since last request: 3.181821 seconds.
-  path: Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_SmallStep_Forward.fbx
-  artifactKey: Guid(389ccc2f896cc214e964ec2e9a9c3751) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_SmallStep_Forward.fbx using Guid(389ccc2f896cc214e964ec2e9a9c3751) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '063f72d4ae1d3b0293a48676634d8969') in 0.002068958 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 139
-
-========================================================================
-Received Import Request.
-  Time since last request: 35.648744 seconds.
-  path: Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_EvadeStep_Forward.fbx
-  artifactKey: Guid(fb46e517fb38fdd45b895e0597890e7d) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_EvadeStep_Forward.fbx using Guid(fb46e517fb38fdd45b895e0597890e7d) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '1fe0d3b96bfab23a6305ef15680f4548') in 0.002502167 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 139
-
-========================================================================
-Received Import Request.
-  Time since last request: 26.906657 seconds.
-  path: Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_EvadeStep_Forward.anim
-  artifactKey: Guid(a88969a605b4145929b6af507eb27328) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_EvadeStep_Forward.anim using Guid(a88969a605b4145929b6af507eb27328) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'f0194befc7c6fd23fb799d8c2b626cf3') in 0.003641125 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 155.565675 seconds.
-  path: Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_EvadeStep_Right.fbx
-  artifactKey: Guid(8aaac3bc2a7a2cb4f881858bd385ddcc) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_EvadeStep_Right.fbx using Guid(8aaac3bc2a7a2cb4f881858bd385ddcc) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '6248eaca7f92ee98054bca0250b38216') in 0.002464125 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 139
-
-========================================================================
-Received Import Request.
-  Time since last request: 30.846376 seconds.
-  path: Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_Float_Right.anim
-  artifactKey: Guid(f9f63f147ef8e4e599ee5f5095430897) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_Float_Right.anim using Guid(f9f63f147ef8e4e599ee5f5095430897) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '0e6f7c2098676c6169e93753f5594215') in 0.00880125 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 69.389327 seconds.
-  path: Assets/Animator/PlayerAnimator.controller
-  artifactKey: Guid(b99b650b8c5624edaa618d9d2dfc941a) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Animator/PlayerAnimator.controller using Guid(b99b650b8c5624edaa618d9d2dfc941a) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '8a732a022af0f87cc0fb57bb74823549') in 0.006936125 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 25
-
-========================================================================
-Received Import Request.
-  Time since last request: 24.974596 seconds.
-  path: Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_Float_Left.anim
-  artifactKey: Guid(526a7d0b5f0ac467bac6cfa9b8535063) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_Float_Left.anim using Guid(526a7d0b5f0ac467bac6cfa9b8535063) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'a818787dcc3c382b470b60f106821b31') in 0.008617625 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
-
-========================================================================
-Received Import Request.
-  Time since last request: 23.858400 seconds.
-  path: Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_EvadeStep_Left.fbx
-  artifactKey: Guid(b8c0d5fe704c0ad4095ab327c497a9f0) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_EvadeStep_Left.fbx using Guid(b8c0d5fe704c0ad4095ab327c497a9f0) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '7724536389000dbad5513ce9759cdc43') in 0.002021917 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 139
-
-========================================================================
-Received Import Request.
-  Time since last request: 85.078626 seconds.
-  path: Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_EvadeStep_Forward.anim
-  artifactKey: Guid(a88969a605b4145929b6af507eb27328) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Dodge_and_Evade_Anims/Art/Animations/Dodge_EvadeStep_Forward.anim using Guid(a88969a605b4145929b6af507eb27328) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'cffda48dda227ca9a632ac6d858b512f') in 0.006889125 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+  Time since last request: 1914400.372646 seconds.
+  path: Assets/Prefabs/NPC 1.prefab
+  artifactKey: Guid(8692a4b03d15a4b10a5062788a0a8844) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Prefabs/NPC 1.prefab using Guid(8692a4b03d15a4b10a5062788a0a8844) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'bc8da90cf6babceeb8cdb1cc8b2ad2f3') in 0.194402 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 316
 
 ========================================================================
 Received Prepare
 Assembly reference Packages/com.unity.cinemachine/Editor/Samples/ExposeHDRPInternals/HDRP-Editor-ref.asmref has no target assembly definition
 Assembly reference Packages/com.unity.cinemachine/Editor/Samples/ExposeHDRPInternals/HDRP-Editor-ref.asmref has no target assembly definition
 Begin MonoManager ReloadAssembly
-Thread 0x3174c7000 may have been prematurely finalized
-Duplicate assembly 'Mono.Cecil.Pdb.dll' with different versions detected, using 'Assets/Plugins/Mono.Cecil.Pdb.dll, AssemblyName=Mono.Cecil.Pdb, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e' and ignoring 'Packages/com.unity.nuget.mono-cecil/Mono.Cecil.Pdb.dll, AssemblyName=Mono.Cecil.Pdb, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e'.Duplicate assembly 'Mono.Cecil.Rocks.dll' with different versions detected, using 'Assets/Plugins/Mono.Cecil.Rocks.dll, AssemblyName=Mono.Cecil.Rocks, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e' and ignoring 'Packages/com.unity.nuget.mono-cecil/Mono.Cecil.Rocks.dll, AssemblyName=Mono.Cecil.Rocks, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e'.Duplicate assembly 'Mono.Cecil.dll' with different versions detected, using 'Assets/Plugins/Mono.Cecil.dll, AssemblyName=Mono.Cecil, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e' and ignoring 'Packages/com.unity.nuget.mono-cecil/Mono.Cecil.dll, AssemblyName=Mono.Cecil, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e'.Duplicate assembly 'Mono.Cecil.Mdb.dll' with different versions detected, using 'Assets/Plugins/Mono.Cecil.Mdb.dll, AssemblyName=Mono.Cecil.Mdb, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e' and ignoring 'Packages/com.unity.nuget.mono-cecil/Mono.Cecil.Mdb.dll, AssemblyName=Mono.Cecil.Mdb, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e'.Symbol file LoadedFromMemory is not a mono symbol file
+Thread 0x33a507000 may have been prematurely finalized
+Duplicate assembly 'Mono.Cecil.Pdb.dll' with different versions detected, using 'Assets/Plugins/Mono.Cecil.Pdb.dll, AssemblyName=Mono.Cecil.Pdb, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e' and ignoring 'Packages/com.unity.nuget.mono-cecil/Mono.Cecil.Pdb.dll, AssemblyName=Mono.Cecil.Pdb, Version=0.11.5.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e'.Duplicate assembly 'Mono.Cecil.Rocks.dll' with different versions detected, using 'Assets/Plugins/Mono.Cecil.Rocks.dll, AssemblyName=Mono.Cecil.Rocks, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e' and ignoring 'Packages/com.unity.nuget.mono-cecil/Mono.Cecil.Rocks.dll, AssemblyName=Mono.Cecil.Rocks, Version=0.11.5.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e'.Duplicate assembly 'Mono.Cecil.dll' with different versions detected, using 'Assets/Plugins/Mono.Cecil.dll, AssemblyName=Mono.Cecil, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e' and ignoring 'Packages/com.unity.nuget.mono-cecil/Mono.Cecil.dll, AssemblyName=Mono.Cecil, Version=0.11.5.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e'.Duplicate assembly 'Mono.Cecil.Mdb.dll' with different versions detected, using 'Assets/Plugins/Mono.Cecil.Mdb.dll, AssemblyName=Mono.Cecil.Mdb, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e' and ignoring 'Packages/com.unity.nuget.mono-cecil/Mono.Cecil.Mdb.dll, AssemblyName=Mono.Cecil.Mdb, Version=0.11.5.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e'.Symbol file LoadedFromMemory is not a mono symbol file
 Symbol file LoadedFromMemory is not a mono symbol file
 Symbol file LoadedFromMemory is not a mono symbol file
 Symbol file LoadedFromMemory is not a mono symbol file
-- Loaded All Assemblies, in  0.417 seconds
+- Loaded All Assemblies, in  0.467 seconds
 Assembly reference Packages/com.unity.cinemachine/Editor/Samples/ExposeHDRPInternals/HDRP-Editor-ref.asmref has no target assembly definition
 'Packages/com.unity.cinemachine/Editor/Obsolete/CinemachineVirtualCameraBaseEditor.cs' contains partial class of Unity.Object, exactly 1 of the partial classes needs to be in a file with the same filename. This is to know the one that can be referenced from ie. GameObjects
 'Packages/com.unity.cinemachine/Editor/Editors/CinemachineVirtualCameraBaseEditor.cs' contains partial class of Unity.Object, exactly 1 of the partial classes needs to be in a file with the same filename. This is to know the one that can be referenced from ie. GameObjects
 'Assets/Photon/Fusion/Runtime/Fusion.Unity.cs' contains partial class of Unity.Object, exactly 1 of the partial classes needs to be in a file with the same filename. This is to know the one that can be referenced from ie. GameObjects
 'Assets/Photon/Fusion/Runtime/Fusion.Unity.cs' contains partial class of Unity.Object, exactly 1 of the partial classes needs to be in a file with the same filename. This is to know the one that can be referenced from ie. GameObjects
-Refreshing native plugins compatible for Editor in 0.71 ms, found 3 plugins.
+Refreshing native plugins compatible for Editor in 0.70 ms, found 3 plugins.
 Native extension for Android target not found
 Native extension for WindowsStandalone target not found
 Native extension for OSXStandalone target not found
@@ -384,150 +270,45 @@ Assembly reference Packages/com.unity.cinemachine/Editor/Samples/ExposeHDRPInter
 [Package Manager] Unable to send message (not connected to server process).
 [Package Manager] Cannot connect to Unity Package Manager local server
 Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.466 seconds
-Domain Reload Profiling: 884ms
-	BeginReloadAssembly (107ms)
+- Finished resetting the current domain, in  0.438 seconds
+Domain Reload Profiling: 907ms
+	BeginReloadAssembly (121ms)
 		ExecutionOrderSort (0ms)
-		DisableScriptedObjects (4ms)
+		DisableScriptedObjects (6ms)
 		BackupInstance (0ms)
 		ReleaseScriptingObjects (0ms)
-		CreateAndSetChildDomain (47ms)
+		CreateAndSetChildDomain (55ms)
 	RebuildCommonClasses (24ms)
-	RebuildNativeTypeToScriptingClass (9ms)
-	initialDomainReloadingComplete (14ms)
-	LoadAllAssembliesAndSetupDomain (265ms)
-		LoadAssemblies (162ms)
+	RebuildNativeTypeToScriptingClass (8ms)
+	initialDomainReloadingComplete (16ms)
+	LoadAllAssembliesAndSetupDomain (300ms)
+		LoadAssemblies (185ms)
 		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (132ms)
-			TypeCache.Refresh (7ms)
+		AnalyzeDomain (144ms)
+			TypeCache.Refresh (6ms)
 				TypeCache.ScanAssembly (0ms)
-			BuildScriptInfoCaches (106ms)
+			BuildScriptInfoCaches (119ms)
 			ResolveRequiredComponents (16ms)
-	FinalizeReload (466ms)
+	FinalizeReload (439ms)
 		ReleaseScriptCaches (0ms)
 		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (362ms)
+		SetupLoadedEditorAssemblies (342ms)
 			LogAssemblyErrors (0ms)
-			InitializePlatformSupportModulesInManaged (11ms)
+			InitializePlatformSupportModulesInManaged (12ms)
 			SetLoadedEditorAssemblies (3ms)
-			BeforeProcessingInitializeOnLoad (84ms)
-			ProcessInitializeOnLoadAttributes (243ms)
-			ProcessInitializeOnLoadMethodAttributes (20ms)
+			BeforeProcessingInitializeOnLoad (82ms)
+			ProcessInitializeOnLoadAttributes (224ms)
+			ProcessInitializeOnLoadMethodAttributes (19ms)
 			AfterProcessingInitializeOnLoad (1ms)
-			EditorAssembliesLoaded (0ms)
-		ExecutionOrderSort2 (0ms)
-		AwakeInstancesAfterBackupRestoration (2ms)
-Shader 'MoreMountains/MMRipple': fallback shader 'Particle/AlphaBlended' not found
-Refreshing native plugins compatible for Editor in 0.80 ms, found 3 plugins.
-Preloading 0 native plugins for Editor in 0.00 ms.
-Unloading 13 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 5551 unused Assets / (1.5 MB). Loaded Objects now: 6125.
-Memory consumption went from 281.3 MB to 279.7 MB.
-Total: 5.098250 ms (FindLiveObjects: 0.297792 ms CreateObjectMapping: 0.115833 ms MarkObjects: 3.800709 ms  DeleteObjects: 0.883333 ms)
-
-Prepare: number of updated asset objects reloaded= 0
-========================================================================
-Received Import Request.
-  Time since last request: 302.594790 seconds.
-  path: Assets/Prefabs/Player 1 Network.prefab
-  artifactKey: Guid(2ba17190135004bf9924b23110f9f147) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Prefabs/Player 1 Network.prefab using Guid(2ba17190135004bf9924b23110f9f147) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '8b1380ee765a95a11a183f13b7d7171b') in 0.133347 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 308
-
-========================================================================
-Received Prepare
-Shader 'MoreMountains/MMRipple': fallback shader 'Particle/AlphaBlended' not found
-Refreshing native plugins compatible for Editor in 0.78 ms, found 3 plugins.
-Preloading 0 native plugins for Editor in 0.00 ms.
-Unloading 13 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 15 unused Assets / (230.7 KB). Loaded Objects now: 6126.
-Memory consumption went from 266.6 MB to 266.3 MB.
-Total: 5.383125 ms (FindLiveObjects: 0.588250 ms CreateObjectMapping: 0.337209 ms MarkObjects: 4.265542 ms  DeleteObjects: 0.191042 ms)
-
-Prepare: number of updated asset objects reloaded= 0
-========================================================================
-Received Prepare
-Shader 'MoreMountains/MMRipple': fallback shader 'Particle/AlphaBlended' not found
-Refreshing native plugins compatible for Editor in 0.67 ms, found 3 plugins.
-Preloading 0 native plugins for Editor in 0.00 ms.
-Unloading 13 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 13 unused Assets / (230.2 KB). Loaded Objects now: 6126.
-Memory consumption went from 266.6 MB to 266.3 MB.
-Total: 4.315167 ms (FindLiveObjects: 0.162292 ms CreateObjectMapping: 0.051792 ms MarkObjects: 4.052583 ms  DeleteObjects: 0.048334 ms)
-
-Prepare: number of updated asset objects reloaded= 0
-========================================================================
-Received Import Request.
-  Time since last request: 14.839193 seconds.
-  path: Assets/Prefabs/Player 1 Network.prefab
-  artifactKey: Guid(2ba17190135004bf9924b23110f9f147) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
-Start importing Assets/Prefabs/Player 1 Network.prefab using Guid(2ba17190135004bf9924b23110f9f147) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'cc48585701550abac3434bbc158496b5') in 0.060776708 seconds
-Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 308
-
-========================================================================
-Received Prepare
-Assembly reference Packages/com.unity.cinemachine/Editor/Samples/ExposeHDRPInternals/HDRP-Editor-ref.asmref has no target assembly definition
-Assembly reference Packages/com.unity.cinemachine/Editor/Samples/ExposeHDRPInternals/HDRP-Editor-ref.asmref has no target assembly definition
-Begin MonoManager ReloadAssembly
-Thread 0x3174c7000 may have been prematurely finalized
-Duplicate assembly 'Mono.Cecil.Pdb.dll' with different versions detected, using 'Assets/Plugins/Mono.Cecil.Pdb.dll, AssemblyName=Mono.Cecil.Pdb, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e' and ignoring 'Packages/com.unity.nuget.mono-cecil/Mono.Cecil.Pdb.dll, AssemblyName=Mono.Cecil.Pdb, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e'.Duplicate assembly 'Mono.Cecil.Rocks.dll' with different versions detected, using 'Assets/Plugins/Mono.Cecil.Rocks.dll, AssemblyName=Mono.Cecil.Rocks, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e' and ignoring 'Packages/com.unity.nuget.mono-cecil/Mono.Cecil.Rocks.dll, AssemblyName=Mono.Cecil.Rocks, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e'.Duplicate assembly 'Mono.Cecil.dll' with different versions detected, using 'Assets/Plugins/Mono.Cecil.dll, AssemblyName=Mono.Cecil, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e' and ignoring 'Packages/com.unity.nuget.mono-cecil/Mono.Cecil.dll, AssemblyName=Mono.Cecil, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e'.Duplicate assembly 'Mono.Cecil.Mdb.dll' with different versions detected, using 'Assets/Plugins/Mono.Cecil.Mdb.dll, AssemblyName=Mono.Cecil.Mdb, Version=0.11.6.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e' and ignoring 'Packages/com.unity.nuget.mono-cecil/Mono.Cecil.Mdb.dll, AssemblyName=Mono.Cecil.Mdb, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e'.Symbol file LoadedFromMemory is not a mono symbol file
-Symbol file LoadedFromMemory is not a mono symbol file
-Symbol file LoadedFromMemory is not a mono symbol file
-Symbol file LoadedFromMemory is not a mono symbol file
-- Loaded All Assemblies, in  0.486 seconds
-Assembly reference Packages/com.unity.cinemachine/Editor/Samples/ExposeHDRPInternals/HDRP-Editor-ref.asmref has no target assembly definition
-'Packages/com.unity.cinemachine/Editor/Obsolete/CinemachineVirtualCameraBaseEditor.cs' contains partial class of Unity.Object, exactly 1 of the partial classes needs to be in a file with the same filename. This is to know the one that can be referenced from ie. GameObjects
-'Packages/com.unity.cinemachine/Editor/Editors/CinemachineVirtualCameraBaseEditor.cs' contains partial class of Unity.Object, exactly 1 of the partial classes needs to be in a file with the same filename. This is to know the one that can be referenced from ie. GameObjects
-'Assets/Photon/Fusion/Runtime/Fusion.Unity.cs' contains partial class of Unity.Object, exactly 1 of the partial classes needs to be in a file with the same filename. This is to know the one that can be referenced from ie. GameObjects
-'Assets/Photon/Fusion/Runtime/Fusion.Unity.cs' contains partial class of Unity.Object, exactly 1 of the partial classes needs to be in a file with the same filename. This is to know the one that can be referenced from ie. GameObjects
-Refreshing native plugins compatible for Editor in 0.65 ms, found 3 plugins.
-Native extension for Android target not found
-Native extension for WindowsStandalone target not found
-Native extension for OSXStandalone target not found
-Assembly reference Packages/com.unity.cinemachine/Editor/Samples/ExposeHDRPInternals/HDRP-Editor-ref.asmref has no target assembly definition
-[Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
-[Package Manager] Unable to send message (not connected to server process).
-[Package Manager] Cannot connect to Unity Package Manager local server
-Mono: successfully reloaded assembly
-- Finished resetting the current domain, in  0.411 seconds
-Domain Reload Profiling: 900ms
-	BeginReloadAssembly (150ms)
-		ExecutionOrderSort (0ms)
-		DisableScriptedObjects (8ms)
-		BackupInstance (0ms)
-		ReleaseScriptingObjects (0ms)
-		CreateAndSetChildDomain (65ms)
-	RebuildCommonClasses (24ms)
-	RebuildNativeTypeToScriptingClass (9ms)
-	initialDomainReloadingComplete (41ms)
-	LoadAllAssembliesAndSetupDomain (264ms)
-		LoadAssemblies (164ms)
-		RebuildTransferFunctionScriptingTraits (0ms)
-		AnalyzeDomain (130ms)
-			TypeCache.Refresh (7ms)
-				TypeCache.ScanAssembly (0ms)
-			BuildScriptInfoCaches (105ms)
-			ResolveRequiredComponents (15ms)
-	FinalizeReload (412ms)
-		ReleaseScriptCaches (0ms)
-		RebuildScriptCaches (0ms)
-		SetupLoadedEditorAssemblies (319ms)
-			LogAssemblyErrors (0ms)
-			InitializePlatformSupportModulesInManaged (10ms)
-			SetLoadedEditorAssemblies (3ms)
-			BeforeProcessingInitializeOnLoad (80ms)
-			ProcessInitializeOnLoadAttributes (206ms)
-			ProcessInitializeOnLoadMethodAttributes (20ms)
-			AfterProcessingInitializeOnLoad (0ms)
 			EditorAssembliesLoaded (0ms)
 		ExecutionOrderSort2 (0ms)
 		AwakeInstancesAfterBackupRestoration (1ms)
 Shader 'MoreMountains/MMRipple': fallback shader 'Particle/AlphaBlended' not found
-Refreshing native plugins compatible for Editor in 0.75 ms, found 3 plugins.
+Refreshing native plugins compatible for Editor in 0.77 ms, found 3 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
 Unloading 13 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 5551 unused Assets / (1.7 MB). Loaded Objects now: 6125.
-Memory consumption went from 280.6 MB to 278.9 MB.
-Total: 4.889542 ms (FindLiveObjects: 0.274750 ms CreateObjectMapping: 0.102500 ms MarkObjects: 3.691834 ms  DeleteObjects: 0.820208 ms)
+Unloading 6119 unused Assets / (2.0 MB). Loaded Objects now: 6712.
+Memory consumption went from 214.0 MB to 212.0 MB.
+Total: 5.012875 ms (FindLiveObjects: 0.304666 ms CreateObjectMapping: 0.117709 ms MarkObjects: 3.657416 ms  DeleteObjects: 0.932750 ms)
 
 Prepare: number of updated asset objects reloaded= 0

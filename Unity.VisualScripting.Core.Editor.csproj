@@ -288,8 +288,8 @@
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Utilities/AssetUtility.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Interface/Fuzzy/FuzzyOptionProvider.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Windows/WindowClose.cs" />
-    <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Serialization/SerializableTypeExtensions.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Plugin/Migrations/Migration_1_5_1_to_1_5_2.cs" />
+    <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Serialization/SerializableTypeExtensions.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Plugins/PluginManifest.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Plugin/Changelogs/LegacyLudiqCore/Changelog_1_4_12.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/SerializedProperties/SerializedPropertyProviderProvider.cs" />
@@ -379,8 +379,8 @@
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Dependencies/ReorderableList/ElementAdderMenu/ElementAdderMenuBuilder.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Meta/RootMetadata.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Utilities/BackupUtility.cs" />
-    <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Interface/Fuzzy/FuzzyOptionTreeExtensionProvider.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Widgets/Nodes/INodeWidget.cs" />
+    <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Interface/Fuzzy/FuzzyOptionTreeExtensionProvider.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Variables/VariablesPanel.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Interface/Fuzzy/FuzzyOptionNode.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Interface/Licenses/License.MSPL.cs" />
@@ -477,8 +477,8 @@
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Dependencies/ReorderableList/Internal/SerializedPropertyUtility.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Graph/GraphPointerData.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Plugin/Changelogs/LegacyLudiqGraphs/Changelog_1_4_6.cs" />
-    <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Description/GraphDescriptor.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Inspection/Unity/ColorInspector.cs" />
+    <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Description/GraphDescriptor.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Reflection/EnumOptionTree.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Windows/BackupWindow/BackupPage.cs" />
     <Compile Include="Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/Platforms/MethodBaseStubWriter.cs" />
@@ -945,11 +945,17 @@
     <Reference Include="Photon3Unity3D">
       <HintPath>/Users/garena/Documents/My Project/My project (1)/Assets/Photon/PhotonLibs/netstandard2.0/Photon3Unity3D.dll</HintPath>
     </Reference>
+    <Reference Include="BehaviorDesigner.Runtime">
+      <HintPath>/Users/garena/Documents/My Project/My project (1)/Assets/Behavior Designer/Runtime/BehaviorDesigner.Runtime.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.VisualScripting.TextureAssets">
       <HintPath>/Users/garena/Documents/My Project/My project (1)/Library/PackageCache/com.unity.visualscripting@7dcdc439b230/Editor/VisualScripting.Core/EditorAssetResources/Unity.VisualScripting.TextureAssets.dll</HintPath>
     </Reference>
     <Reference Include="Fusion.Realtime">
       <HintPath>/Users/garena/Documents/My Project/My project (1)/Assets/Photon/Fusion/Assemblies/Fusion.Realtime.dll</HintPath>
+    </Reference>
+    <Reference Include="BehaviorDesigner.Editor">
+      <HintPath>/Users/garena/Documents/My Project/My project (1)/Assets/Behavior Designer/Editor/BehaviorDesigner.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Android.Types">
       <HintPath>/Applications/Unity/Hub/Editor/6000.0.47f1/PlaybackEngines/AndroidPlayer/Unity.Android.Types.dll</HintPath>

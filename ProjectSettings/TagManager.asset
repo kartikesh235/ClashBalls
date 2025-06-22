@@ -12,6 +12,7 @@ TagManager:
   - SpawnPoint
   - Ball
   - Wall
+  - BallSpawnPoint
   layers:
   - Default
   - TransparentFX
