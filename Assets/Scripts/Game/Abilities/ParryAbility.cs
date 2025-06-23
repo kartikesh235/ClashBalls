@@ -47,9 +47,7 @@ namespace Game.Abilities
         {
             if (mIsParrying)
                 return true;
-
-            DisableMovement();
-            Runner.Invoke(nameof(EnableMovement), TypeData.failStunDuration);
+            
             return false;
         }
 

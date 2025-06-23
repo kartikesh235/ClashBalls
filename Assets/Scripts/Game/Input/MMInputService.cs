@@ -46,7 +46,7 @@ namespace Game.Input
             typeData = characterType;
             mCooldownDurationA = typeData.pickThrowCooldown;
             mCooldownDurationB = typeData.dodgeCooldown;
-            mCooldownDurationC = typeData.parryThrowCooldown;
+            mCooldownDurationC = typeData.parryCooldown;
             mCooldownDurationD = typeData.tackleCooldown;
             mCooldownDurationE = 1f;
         }

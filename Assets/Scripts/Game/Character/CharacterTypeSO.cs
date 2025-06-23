@@ -28,7 +28,7 @@ namespace Game.Character
         [Header("Parry")]
         public float parryDuration = 1f;
         public float failStunDuration = 0.5f;
-        public float parryThrowCooldown = 1.5f;
+        public float parryCooldown = 1.5f;
         
         [Header("Tackle / Offensive Slide")]
         public float tackeTravelDistance = 2f;
