@@ -97,6 +97,11 @@ namespace Game.Controllers
             }
         }
 
+        public CharacterTypeSO GetCharacterTypeSO()
+        {
+            return characterType;
+        }
+       
         public bool IsNPC()
         {
             return GetComponent<NetworkedNPCControllerNew>() != null;

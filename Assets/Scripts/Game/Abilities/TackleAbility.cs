@@ -1,5 +1,6 @@
 using Fusion;
 using Game.AnimationControl;
+using Game.Character;
 using Game.Controllers;
 using UnityEngine;
 
@@ -170,22 +171,42 @@ namespace Game.Abilities
 
         #region RPC & Re-enable Movement
 
+        // Add this to your existing TackleAbility in the RPC_DisableMovement method:
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+       // Update the RPC in your existing TackleAbility
         private void RPC_DisableMovement(NetworkObject target)
         {
             var pm = target.GetComponent<PlayerMovement>();
             var parry = target.GetComponent<ParryAbility>();
-            // also check if the tagret is has not activated parry state
-            if (pm == null || parry.IsParrying())
+            var stunSystem = target.GetComponent<StunSystem>();
+    
+            // Check if target successfully parried
+            if (pm == null || parry.IsParrying)
                 return;
-           
+   
             if (pm == null) 
                 return;
 
-            pm.enabled = false;
-            target.GetComponent<TackleAbility>().RunnerInvokeEnable(pm, TypeData.tackleStunDuration);
+            // Apply stun instead of just disabling movement
+            if (stunSystem != null)
+            {
+                stunSystem.ApplyStun(TypeData.tackleStunDuration);
+            }
+            else
+            {
+                // Fallback to old system if no stun system
+                pm.enabled = false;
+                target.GetComponent<TackleAbility>().RunnerInvokeEnable(pm, TypeData.tackleStunDuration);
+            }
+    
+            // Apply damage
+            var healthSystem = target.GetComponent<PlayerHealthSystem>();
+            if (healthSystem != null && healthSystem.CanTakeDamage())
+            {
+                healthSystem.TakeDamage(TypeData.tackleForce, GetComponent<PlayerController>());
+              //  ScoreManager.Instance.AddScore(GetComponent<PlayerController>(), (int)TypeData.tackleForce, "Tackle");
+            }
         }
-
         public void RunnerInvokeEnable(PlayerMovement targetMovement, float delay)
         {
             mCachedTarget = targetMovement;

@@ -46,8 +46,10 @@ namespace Game.Abilities
         {
             if (Input.ButtonAPressed)
             {
-                float force = TypeData.baseThrowForce * 1.5f; // Medium charge for NPCs
-                RPC_ThrowBall(force);
+                float force = TypeData.baseThrowForce * 1.5f;
+                
+                // NPCs execute directly since Host has state authority
+                ExecuteThrow(force);
                 
                 mCharge = 0f;
                 mHeldBall = null;
@@ -67,8 +69,9 @@ namespace Game.Abilities
 
             if (Input.ButtonAReleased)
             {
-                float force =  TypeData.baseThrowForce * (1f + mCharge);
-
+                float force = TypeData.baseThrowForce * (1f + mCharge);
+                
+                // Humans use RPC
                 RPC_ThrowBall(force);
 
                 mCharge = 0f;
@@ -84,17 +87,22 @@ namespace Game.Abilities
             mHoldDelayTimer = 0.5f;
             mCharge = 0f;
 
-            // Configure slider and set it to base value
-            float minForce = 0;
-            float maxForce = TypeData.baseThrowForce * TypeData.maxChargeThrowMultiplier;
-
-            Game2DUI.Instance.ConfigureThrowSlider(minForce, maxForce);
-            Game2DUI.Instance.SetThrowPower(TypeData.baseThrowForce);
+            if (!mIsNPC)
+            {
+                float minForce = 0;
+                float maxForce = TypeData.baseThrowForce * TypeData.maxChargeThrowMultiplier;
+                Game2DUI.Instance.ConfigureThrowSlider(minForce, maxForce);
+                Game2DUI.Instance.SetThrowPower(TypeData.baseThrowForce);
+            }
         }
-
 
         [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
         private void RPC_ThrowBall(float force)
+        {
+            ExecuteThrow(force);
+        }
+
+        private void ExecuteThrow(float force)
         {
             if (mHeldBall == null) return;
 
@@ -109,6 +117,12 @@ namespace Game.Abilities
             // Apply throw
             mHeldBall.Throw(finalForce.normalized, finalForce.magnitude, gameObject);
             GetComponent<PlayerAnimation>().SetHandSubState(HandSubState.Throw);
+
+            var pickupAbility = GetComponent<PickUpAbility>();
+            if (pickupAbility != null)
+            {
+                pickupAbility.OnBallThrown();
+            }
         }
 
     }

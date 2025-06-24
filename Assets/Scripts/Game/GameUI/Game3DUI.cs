@@ -1,29 +1,100 @@
-using System;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using Game.Character;
+using Game.Controllers;
 
 namespace Game.GameUI
 {
-    public class Game3Dui : MonoBehaviour
+    public class Game3DUI : MonoBehaviour
     {
-        //Look at camera 
+        [Header("UI Components")]
+        public Slider healthSlider;
+        public Slider staminaSlider;
+        public TMP_Text attackPowerText;
+        public TMP_Text healCountdownText;
+        
+        [Header("Healing Effects")]
+        public GameObject healingParticles;
+        
+        private CharacterStats mStats;
+        private PlayerHealthSystem mHealthSystem;
+        private CharacterTypeSO mCharacterType;
+        private Camera mMainCamera;
 
-        private void LateUpdate()
+        private void Start()
         {
-            if (Camera.main != null)
+            mMainCamera = Camera.main;
+            mStats = GetComponentInParent<CharacterStats>();
+            mHealthSystem = GetComponentInParent<PlayerHealthSystem>();
+            mCharacterType = GetComponentInParent<PlayerController>().GetCharacterTypeSO();
+            
+            // Initialize UI
+            if (mCharacterType != null)
             {
-                LookAtCamera();
+                float tackleAttackPower = mCharacterType.tackleForce;
+                attackPowerText.text = $"ATK: {tackleAttackPower:F0}";
             }
+            
+            // Hide heal countdown initially
+            if (healCountdownText != null)
+                healCountdownText.gameObject.SetActive(false);
+                
+            if (healingParticles != null)
+                healingParticles.SetActive(false);
         }
 
-        public void LookAtCamera()
+        private void Update()
         {
-            Camera camera = Camera.main;
-            if (camera != null)
+            LookAtCamera();
+            UpdateHealthUI();
+            UpdateStaminaUI();
+        }
+
+        private void LookAtCamera()
+        {
+            if (mMainCamera != null)
             {
-                transform.LookAt(camera.transform);
+                transform.LookAt(mMainCamera.transform);
                 transform.Rotate(0, 180, 0);
             }
         }
-        
+
+        private void UpdateHealthUI()
+        {
+            if (mHealthSystem != null && healthSlider != null)
+            {
+                healthSlider.value = mHealthSystem.HealthRatio;
+            }
+        }
+
+        private void UpdateStaminaUI()
+        {
+            if (mStats != null && staminaSlider != null)
+            {
+                staminaSlider.value = mStats.StaminaRatio;
+            }
+        }
+
+        public void ShowHealCountdown(float timeLeft)
+        {
+            if (healCountdownText != null)
+            {
+                healCountdownText.gameObject.SetActive(true);
+                healCountdownText.text = $"Healing: {timeLeft:F1}s";
+            }
+        }
+
+        public void HideHealCountdown()
+        {
+            if (healCountdownText != null)
+                healCountdownText.gameObject.SetActive(false);
+        }
+
+        public void ShowHealingEffects(bool show)
+        {
+            if (healingParticles != null)
+                healingParticles.SetActive(show);
+        }
     }
 }

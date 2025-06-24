@@ -10,8 +10,9 @@ namespace Game.AnimationControl
         Locomotion = 0,
         DodgeLeft = 1,
         DodgeRight = 2,
-        Parry = 3, // shield
-        Tackle = 4, // dash
+        Parry = 3,
+        Tackle = 4,
+        Stunned = 5  // Add stunned state
     }
 
     public enum HandSubState
@@ -19,6 +20,7 @@ namespace Game.AnimationControl
         Throw = 1,
         Pickup = 2,
     }
+    
     public class PlayerAnimation : NetworkBehaviour
     {
         private static readonly int State = Animator.StringToHash("State");
@@ -28,10 +30,11 @@ namespace Game.AnimationControl
         private static readonly int RunMultiplier = Animator.StringToHash("RunMultiplier");
         
         [SerializeField] private Animator mAnim;
-        private IInputService mInput; // Changed from MmInputService to IInputService
+        private IInputService mInput;
 
-        [Networked]
-        private PlayerAnimState NetworkedAnimState { get; set; }
+        [Networked] private PlayerAnimState NetworkedAnimState { get; set; }
+        [Networked] private bool IsStunnedState { get; set; }
+        
         private PlayerAnimState mLastAnimState = PlayerAnimState.Locomotion;
 
         public override void Spawned()
@@ -57,9 +60,20 @@ namespace Game.AnimationControl
         {
             if (HasStateAuthority)
             {
-                if (NetworkedAnimState == PlayerAnimState.Locomotion && mInput != null)
+                // If stunned, force stunned animation and ignore all input
+                if (IsStunnedState)
                 {
-                    // Debug logging for NPCs
+                    if (NetworkedAnimState != PlayerAnimState.Stunned)
+                    {
+                        NetworkedAnimState = PlayerAnimState.Stunned;
+                    }
+                    
+                    // Force idle/stunned pose
+                    SetLocomotionState(0f, 0f);
+                    mAnim.SetFloat(RunMultiplier, 0f);
+                }
+                else if (NetworkedAnimState == PlayerAnimState.Locomotion && mInput != null)
+                {
                     if (mInput is NetworkedNPCControllerNew && mInput.Movement != Vector2.zero)
                     {
                         Debug.Log($"NPC Animation {gameObject.name}: Movement={mInput.Movement}, Sprint={mInput.Sprint}");
@@ -90,9 +104,28 @@ namespace Game.AnimationControl
 
         public void SetState(PlayerAnimState state)
         {
+            // Don't allow state changes if stunned
+            if (IsStunnedState && state != PlayerAnimState.Stunned) 
+                return;
+                
             if (NetworkedAnimState == state) 
                 return;
+                
             NetworkedAnimState = state;
+        }
+
+        public void SetStunned(bool stunned)
+        {
+            IsStunnedState = stunned;
+            
+            if (stunned)
+            {
+                NetworkedAnimState = PlayerAnimState.Stunned;
+            }
+            else
+            {
+                NetworkedAnimState = PlayerAnimState.Locomotion;
+            }
         }
 
         private void SetLocomotionState(float joystickX, float joystickY)
@@ -115,15 +148,18 @@ namespace Game.AnimationControl
         
         public void SetHandSubState(HandSubState state)
         {
+            // Don't allow hand animations if stunned
+            if (IsStunnedState) return;
+            
             if (mAnim == null) return;
             
             mAnim.SetInteger(HandState, (int)state);
             if (state == HandSubState.Throw)
             {
-                StartCoroutine(ExtraUtils.SetValueSmoothAfterADelay(0.5f, (a)=>
+                StartCoroutine(ExtraUtils.SetValueSmoothAfterADelay(0.5f, (a) =>
                 {
                     mAnim.SetLayerWeight(1, a);
-                },1f,0.0f,1f));
+                }, 1f, 0.0f, 1f));
             }
         }
     }

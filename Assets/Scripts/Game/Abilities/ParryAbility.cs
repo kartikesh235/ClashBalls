@@ -7,33 +7,37 @@ namespace Game.Abilities
 {
     public class ParryAbility : BaseAbility
     {
-        private bool mIsParrying;
-        private float mTimer;
+        [Networked] public bool IsParrying { get; private set; }
+        [Networked] private float ParryTimer { get; set; }
 
         public GameObject vfxParry;
+
         public override void FixedUpdateNetwork()
         {
             if (!HasStateAuthority) return;
 
-            if (mIsParrying)
+            if (IsParrying)
             {
-                mTimer -= Runner.DeltaTime;
-                if (mTimer <= 0f)
+                ParryTimer -= Runner.DeltaTime;
+                if (ParryTimer <= 0f)
                 {
-                    mIsParrying = false;
+                    IsParrying = false;
                 }
             }
-            vfxParry.SetActive(mIsParrying);
+            
+            // Update VFX on all clients
+            if (vfxParry != null)
+                vfxParry.SetActive(IsParrying);
         }
 
         public override void HandleInput()
         {
             if (!HasStateAuthority) return;
 
-            if (Input.ButtonCPressed && !mIsParrying)
+            if (Input.ButtonCPressed && !IsParrying)
             {
-                mIsParrying = true;
-                mTimer = TypeData.parryDuration;
+                IsParrying = true;
+                ParryTimer = TypeData.parryDuration;
                 
                 GetComponent<PlayerAnimation>().SetState(PlayerAnimState.Parry);
                 StartCoroutine(ExtraUtils.SetDelay(0.5f, () =>
@@ -45,7 +49,7 @@ namespace Game.Abilities
 
         public bool TryParry()
         {
-            if (mIsParrying)
+            if (IsParrying)
                 return true;
             
             return false;
@@ -65,9 +69,5 @@ namespace Game.Abilities
                 move.enabled = true;
         }
 
-        public bool IsParrying()
-        {
-            return mIsParrying;
-        }
     }
 }

@@ -18,6 +18,7 @@ namespace Game.Abilities
         private bool mIsDodging;
         private Vector3 mDodgeDirection;
         private float mRequiredAcceleration;
+        private bool mIsNPC;
 
         public GameObject vfxRight;
         public GameObject vfxLeft;
@@ -31,6 +32,9 @@ namespace Game.Abilities
             mRigidbody.angularDamping = 0f;
             mRigidbody.constraints = RigidbodyConstraints.FreezeRotation;
             mDodgeDistance = TypeData.dodgeDistance;
+            
+            // Check if this is an NPC
+            mIsNPC = GetComponent<Game.AI.NetworkedNPCControllerNew>() != null;
         }
 
         public override void FixedUpdateNetwork()
@@ -91,12 +95,25 @@ namespace Game.Abilities
                 travelDistance *= TypeData.sprintDodgeMultiplier;
             }
             
-            // Execute dodge via RPC
-            RPC_DoDodge(dodgeDir, travelDistance);
+            // For NPCs, execute directly since Host has state authority
+            // For humans, use RPC
+            if (mIsNPC)
+            {
+                ExecuteDodge(dodgeDir, travelDistance);
+            }
+            else
+            {
+                RPC_DoDodge(dodgeDir, travelDistance);
+            }
         }
 
         [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
         private void RPC_DoDodge(Vector3 direction, float travelDistance)
+        {
+            ExecuteDodge(direction, travelDistance);
+        }
+
+        private void ExecuteDodge(Vector3 direction, float travelDistance)
         {
             mIsDodging = true;
             mDodgeTimer = 0f;
@@ -111,6 +128,7 @@ namespace Game.Abilities
             GetComponent<PlayerAnimation>().SetState(
                 direction.x > 0f ? PlayerAnimState.DodgeRight : PlayerAnimState.DodgeLeft
             );
+            
             bool isLocalRight = Vector3.Dot(direction, transform.right) > 0f;
             if (isLocalRight)
             {
