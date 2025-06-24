@@ -53,6 +53,7 @@ namespace Game.AI
             if (HasStateAuthority)
             {
                 InitializeBehaviorTree();
+                SetNPCLayer();
                 SetupSharedVariables(); // Add this line
                 SetupNPCDifficulty();
                 Debug.Log($"NPC spawned on Host: {gameObject.name}");
@@ -66,6 +67,26 @@ namespace Game.AI
             }
         }
 
+        private void SetNPCLayer()
+        {
+            int enemyLayer = LayerMask.NameToLayer("Enemy");
+    
+            if (enemyLayer != -1)
+            {
+                SetLayerRecursively(gameObject, enemyLayer);
+                Debug.Log($"Set Enemy layer for NPC: {gameObject.name}");
+            }
+        }
+
+        private void SetLayerRecursively(GameObject obj, int layerIndex)
+        {
+            obj.layer = layerIndex;
+    
+            foreach (Transform child in obj.transform)
+            {
+                SetLayerRecursively(child.gameObject, layerIndex);
+            }
+        }
         private void InitializeBehaviorTree()
         {
             if (behaviorTree == null)
