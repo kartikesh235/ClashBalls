@@ -14,6 +14,19 @@ namespace Game.AI
         [SerializeField] private BehaviorTree behaviorTree;
         [SerializeField] private NPCDifficulty difficulty = NPCDifficulty.Medium;
         
+        [Header("Testing")]
+        [SerializeField] private bool mIsDumbNPC = false;
+        [Tooltip("When enabled, NPC will stand still and do nothing (for testing)")]
+        public bool IsDumbNPC 
+        { 
+            get => mIsDumbNPC; 
+            set 
+            { 
+                mIsDumbNPC = value;
+                UpdateDumbState();
+            } 
+        }
+        
         // Remove SerializeField - these will be retrieved from behavior tree
         private SharedVector2 moveDirection;
         private SharedBool shouldSprint;
@@ -33,15 +46,15 @@ namespace Game.AI
         [Networked] public bool IsNPC { get; private set; } = true;
 
         // IInputService implementation - returns networked values
-        public Vector2 Movement => NetworkedMovement;
-        public bool Sprint => NetworkedSprint;
-        public bool ButtonAPressed => NetworkedButtonAPressed;
-        public bool ButtonAReleased => NetworkedButtonAReleased;
-        public bool ButtonAHeld => NetworkedButtonAHeld;
-        public bool ButtonBPressed => NetworkedButtonBPressed;
-        public bool ButtonCPressed => NetworkedButtonCPressed;
-        public bool ButtonDPressed => NetworkedButtonDPressed;
-        public bool ButtonEPressed => NetworkedButtonEPressed;
+        public Vector2 Movement => mIsDumbNPC ? Vector2.zero : NetworkedMovement;
+        public bool Sprint => mIsDumbNPC ? false : NetworkedSprint;
+        public bool ButtonAPressed => mIsDumbNPC ? false : NetworkedButtonAPressed;
+        public bool ButtonAReleased => mIsDumbNPC ? false : NetworkedButtonAReleased;
+        public bool ButtonAHeld => mIsDumbNPC ? false : NetworkedButtonAHeld;
+        public bool ButtonBPressed => mIsDumbNPC ? false : NetworkedButtonBPressed;
+        public bool ButtonCPressed => mIsDumbNPC ? false : NetworkedButtonCPressed;
+        public bool ButtonDPressed => mIsDumbNPC ? false : NetworkedButtonDPressed;
+        public bool ButtonEPressed => mIsDumbNPC ? false : NetworkedButtonEPressed;
 
         // Local state for Host only
         private bool[] localButtonStates = new bool[5];
@@ -56,6 +69,7 @@ namespace Game.AI
                 SetNPCLayer();
                 SetupSharedVariables(); // Add this line
                 SetupNPCDifficulty();
+                UpdateDumbState();
                 Debug.Log($"NPC spawned on Host: {gameObject.name}");
             }
             else
@@ -65,6 +79,47 @@ namespace Game.AI
                     behaviorTree.enabled = false;
                 Debug.Log($"NPC spawned on Client: {gameObject.name}");
             }
+        }
+
+        private void UpdateDumbState()
+        {
+            if (!HasStateAuthority) return;
+            
+            if (behaviorTree != null)
+            {
+                behaviorTree.enabled = !mIsDumbNPC;
+                
+                if (mIsDumbNPC)
+                {
+                    // Clear all inputs when becoming dumb
+                    ClearAllInputs();
+                    Debug.Log($"NPC {gameObject.name} is now DUMB (inactive)");
+                }
+                else
+                {
+                    Debug.Log($"NPC {gameObject.name} is now SMART (active)");
+                }
+            }
+        }
+
+        private void ClearAllInputs()
+        {
+            NetworkedMovement = Vector2.zero;
+            NetworkedSprint = false;
+            NetworkedButtonAPressed = false;
+            NetworkedButtonBPressed = false;
+            NetworkedButtonCPressed = false;
+            NetworkedButtonDPressed = false;
+            NetworkedButtonEPressed = false;
+            NetworkedButtonAHeld = false;
+            NetworkedButtonAReleased = false;
+            
+            for (int i = 0; i < localButtonStates.Length; i++)
+            {
+                localButtonStates[i] = false;
+            }
+            localButtonAHeld = false;
+            localButtonAReleased = false;
         }
 
         private void SetNPCLayer()
@@ -87,6 +142,7 @@ namespace Game.AI
                 SetLayerRecursively(child.gameObject, layerIndex);
             }
         }
+        
         private void InitializeBehaviorTree()
         {
             if (behaviorTree == null)
@@ -187,9 +243,17 @@ namespace Game.AI
             // Only process AI logic on Host
             if (HasStateAuthority)
             {
-                ProcessAILogic();
-                UpdateNetworkedState();
-                ClearOneFrameInputs();
+                if (mIsDumbNPC)
+                {
+                    // If dumb, ensure all inputs are cleared
+                    ClearAllInputs();
+                }
+                else
+                {
+                    ProcessAILogic();
+                    UpdateNetworkedState();
+                    ClearOneFrameInputs();
+                }
             }
         }
 
@@ -290,6 +354,12 @@ namespace Game.AI
             }
         }
 
+        // Public method to toggle dumb state at runtime
+        public void ToggleDumbState()
+        {
+            IsDumbNPC = !IsDumbNPC;
+        }
+
         // Helper methods for Behavior Designer tasks - only work on Host
         public Vector3 GetClosestBallPosition()
         {
@@ -354,8 +424,9 @@ namespace Game.AI
         {
             if (!HasStateAuthority || !Application.isPlaying) return;
     
-            GUILayout.BeginArea(new Rect(10, 10, 400, 180));
+            GUILayout.BeginArea(new Rect(10, 10, 400, 200));
             GUILayout.Label($"=== NPC {Object.Id} Debug ===");
+            GUILayout.Label($"IsDumbNPC: {mIsDumbNPC}");
             GUILayout.Label($"NetworkedMovement: {NetworkedMovement}");
             GUILayout.Label($"MoveDirection Shared: {moveDirection?.Value ?? Vector2.zero}");
             GUILayout.Label($"Sprint: {NetworkedSprint}");
@@ -368,6 +439,12 @@ namespace Game.AI
             // Check if PlayerController exists
             var playerController = GetComponent<PlayerController>();
             GUILayout.Label($"PlayerController: {(playerController != null ? "EXISTS" : "MISSING")}");
+            
+            // Add toggle button
+            if (GUILayout.Button($"Toggle Dumb State (Current: {(mIsDumbNPC ? "DUMB" : "SMART")})"))
+            {
+                ToggleDumbState();
+            }
     
             GUILayout.EndArea();
         }

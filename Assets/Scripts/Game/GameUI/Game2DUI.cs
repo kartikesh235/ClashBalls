@@ -50,7 +50,7 @@ namespace Game.GameUI
         [SerializeField] private float mThrowSliderSmoothSpeed = 10f;
 
         private Coroutine mThrowSliderCoroutine;
-        private List<ScoreManager.PlayerScore> mAllPlayerScores = new List<ScoreManager.PlayerScore>();
+        private List<ScoreManager.PlayerScoreUI> mAllPlayerScores = new List<ScoreManager.PlayerScoreUI>();
 
         private void Start()
         {
@@ -139,12 +139,12 @@ namespace Game.GameUI
         #endregion
 
         #region All Players Info UI (Right Side)
-        public void UpdateAllPlayersInfo(List<ScoreManager.PlayerScore> allScores)
+        public void UpdateAllPlayersInfo(List<ScoreManager.PlayerScoreUI> allScores)
         {
             mAllPlayerScores = allScores;
             
             // Sort by score (highest first)
-            var sortedScores = new List<ScoreManager.PlayerScore>(allScores);
+            var sortedScores = new List<ScoreManager.PlayerScoreUI>(allScores);
             sortedScores.Sort((a, b) => b.totalScore.CompareTo(a.totalScore));
             
             for (int i = 0; i < playerInfoPanels.Length; i++)

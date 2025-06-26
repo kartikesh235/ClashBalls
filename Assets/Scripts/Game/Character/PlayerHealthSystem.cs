@@ -4,10 +4,12 @@ using Game.Character;
 using Game.GameUI;
 using Game.Abilities;
 using Game.Controllers;
+using Game.AI;
+using Fusion;
 
 namespace Game.Character
 {
-    public class PlayerHealthSystem : MonoBehaviour
+    public class PlayerHealthSystem : NetworkBehaviour
     {
         [Header("Health Settings")]
         public float maxHealth = 100f;
@@ -17,16 +19,19 @@ namespace Game.Character
         [Header("Healing Position")]
         public Transform healingPosition;
         
-        public float CurrentHealth { get; private set; }
+        [Networked] public float CurrentHealth { get; private set; }
+        [Networked] public bool IsHealing { get; private set; }
+        [Networked] public bool HasRespawnParry { get; private set; }
+        
         public float HealthRatio => CurrentHealth / maxHealth;
-        public bool IsHealing { get; private set; }
-        public bool HasRespawnParry { get; private set; }
         
         private CharacterStats mStats;
         private Game3DUI mUI3D;
         private PlayerMovement mMovement;
         private ParryAbility mParryAbility;
         private PlayerController mPlayerController;
+        private NetworkedNPCControllerNew mNPCController;
+        private BehaviorDesigner.Runtime.BehaviorTree mBehaviorTree;
         private Vector3 mOriginalPosition;
         private Coroutine mHealingCoroutine;
         private Coroutine mRespawnParryCoroutine;
@@ -34,7 +39,7 @@ namespace Game.Character
         public delegate void PlayerDefeatedDelegate(PlayerController attacker, PlayerController victim);
         public static event PlayerDefeatedDelegate OnPlayerDefeated;
 
-        private void Start()
+        public override void Spawned()
         {
             CurrentHealth = maxHealth;
             mStats = GetComponent<CharacterStats>();
@@ -42,8 +47,9 @@ namespace Game.Character
             mMovement = GetComponent<PlayerMovement>();
             mParryAbility = GetComponent<ParryAbility>();
             mPlayerController = GetComponent<PlayerController>();
+            mNPCController = GetComponent<NetworkedNPCControllerNew>();
+            mBehaviorTree = GetComponent<BehaviorDesigner.Runtime.BehaviorTree>();
             
-            // Find healing position if not assigned
             if (healingPosition == null)
             {
                 var healingZone = GameObject.FindGameObjectWithTag("HealingZone");
@@ -54,15 +60,32 @@ namespace Game.Character
 
         public void TakeDamage(float damage, PlayerController attacker = null)
         {
-            if (IsHealing || HasRespawnParry) return;
+            if (!HasStateAuthority || IsHealing || HasRespawnParry) return;
             
             CurrentHealth -= damage;
             CurrentHealth = Mathf.Max(0, CurrentHealth);
             
             if (CurrentHealth <= 0)
             {
-                StartHealing(attacker);
+                NetworkId attackerId = attacker != null ? attacker.Object.Id : default(NetworkId);
+                RPC_StartHealing(attackerId);
             }
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        private void RPC_StartHealing(NetworkId attackerId)
+        {
+            if (IsHealing) return;
+            
+            PlayerController attacker = null;
+            if (attackerId.IsValid)
+            {
+                var attackerObj = Runner.FindObject(attackerId);
+                if (attackerObj != null)
+                    attacker = attackerObj.GetComponent<PlayerController>();
+            }
+            
+            StartHealing(attacker);
         }
 
         private void StartHealing(PlayerController attacker)
@@ -72,30 +95,75 @@ namespace Game.Character
             IsHealing = true;
             mOriginalPosition = transform.position;
             
-            // Notify score system
             if (attacker != null)
             {
                 OnPlayerDefeated?.Invoke(attacker, mPlayerController);
             }
             
-            // Disable movement and abilities
-            if (mMovement != null) mMovement.enabled = false;
+            DisablePlayerControl();
+            TeleportToHealingZone();
+            
+            if (HasStateAuthority)
+            {
+                mHealingCoroutine = StartCoroutine(HealingProcess());
+            }
+        }
+
+        private void DisablePlayerControl()
+        {
+            // Disable movement
+            if (mMovement != null) 
+                mMovement.enabled = false;
+            
+            // Disable NPC behavior tree
+            if (mBehaviorTree != null)
+                mBehaviorTree.enabled = false;
+            
+            // Disable abilities
             DisableAllAbilities();
             
-            // Teleport to healing position
+            // Stop NPC input
+            if (mNPCController != null)
+            {
+                mNPCController.enabled = false;
+            }
+        }
+
+        private void EnablePlayerControl()
+        {
+            // Re-enable movement
+            if (mMovement != null) 
+                mMovement.enabled = true;
+            
+            // Re-enable NPC behavior tree
+            if (mBehaviorTree != null)
+                mBehaviorTree.enabled = true;
+            
+            // Re-enable abilities
+            EnableAllAbilities();
+            
+            // Re-enable NPC input
+            if (mNPCController != null)
+            {
+                mNPCController.enabled = true;
+            }
+        }
+
+        private void TeleportToHealingZone()
+        {
             if (healingPosition != null)
             {
                 transform.position = healingPosition.position;
                 transform.rotation = healingPosition.rotation;
+                
+                // Clear any residual velocity
+                var rb = GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    rb.linearVelocity = Vector3.zero;
+                    rb.angularVelocity = Vector3.zero;
+                }
             }
-
-            if (mHealingCoroutine != null)
-            {
-                StopCoroutine(mHealingCoroutine);
-            }
-            
-            // Start healing process
-            mHealingCoroutine = StartCoroutine(HealingProcess());
         }
 
         private IEnumerator HealingProcess()
@@ -116,7 +184,12 @@ namespace Game.Character
                 yield return null;
             }
             
-            // Healing complete
+            RPC_CompleteHealing();
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        private void RPC_CompleteHealing()
+        {
             CompleteHealing();
         }
 
@@ -134,12 +207,7 @@ namespace Game.Character
             
             // Respawn at spawn point
             RespawnAtSpawnPoint();
-            
-            // Re-enable movement and abilities
-            if (mMovement != null) mMovement.enabled = true;
-            EnableAllAbilities();
-            
-            // Grant respawn parry
+            EnablePlayerControl();
             StartRespawnParry();
         }
 
@@ -151,13 +219,24 @@ namespace Game.Character
                 var randomSpawn = spawnPoints[Random.Range(0, spawnPoints.Length)];
                 transform.position = randomSpawn.transform.position;
                 transform.rotation = randomSpawn.transform.rotation;
+                
+                // Clear any residual velocity after respawn
+                var rb = GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    rb.linearVelocity = Vector3.zero;
+                    rb.angularVelocity = Vector3.zero;
+                }
             }
         }
 
         private void StartRespawnParry()
         {
             HasRespawnParry = true;
-            mRespawnParryCoroutine = StartCoroutine(RespawnParryDuration());
+            if (HasStateAuthority)
+            {
+                mRespawnParryCoroutine = StartCoroutine(RespawnParryDuration());
+            }
         }
 
         private IEnumerator RespawnParryDuration()

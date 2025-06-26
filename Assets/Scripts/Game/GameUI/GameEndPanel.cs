@@ -57,7 +57,7 @@ namespace Game.GameUI
             {
                 var winner = sortedScores[0];
                 string winnerName = winner.isNPC ? $"[NPC] {winner.playerName}" : winner.playerName;
-                winnerText.text = $" WINNER: {winnerName}";
+                winnerText.text = $"WINNER: {winnerName}";
             }
             
             // Display all player results
@@ -67,7 +67,7 @@ namespace Game.GameUI
             }
         }
 
-        private void CreatePlayerResultItem(ScoreManager.PlayerScore playerScore, int rank)
+        private void CreatePlayerResultItem(ScoreManager.PlayerScoreUI playerScore, int rank)
         {
             GameObject resultItem = Instantiate(playerResultPrefab, playerResultsContainer);
             resultItem.gameObject.SetActive(true);

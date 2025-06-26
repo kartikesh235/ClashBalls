@@ -1,33 +1,40 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using Fusion;
+using Game.Controllers;
 using Game.GameUI;
-using Game.Managers;
 
 namespace Game.Managers
 {
-    public class GameManager : MonoBehaviour
+    public class GameManager : NetworkBehaviour
     {
-        public static GameManager Instance;
+        public static GameManager Instance { get; private set; }
 
         [Header("Game Settings")]
         public float matchDuration = 90f;
-        
-        [Header("UI References")]
-        [SerializeField] private Game2DUI mUI;
-        [SerializeField] private GameEndPanel mGameEndPanel;
+        public GameObject scoreManagerPrefab;
 
-        private float mCurrentTime;
-        private bool mGameEnded = false;
-        
-        public delegate void GameEndedDelegate();
-        public static event GameEndedDelegate OnGameEnded;
+        [Networked] public float TimeRemaining { get; private set; }
+        [Networked] public bool GameStarted { get; private set; }
+        [Networked] public bool GameEnded { get; private set; }
 
-        private void Awake()
+        public static System.Action OnGameEnded; // Event for GameEndPanel
+
+        private ScoreManager mScoreManager;
+        private List<PlayerController> mRegisteredPlayers = new List<PlayerController>();
+
+        public override void Spawned()
         {
             if (Instance == null)
             {
                 Instance = this;
-                mCurrentTime = matchDuration;
+                DontDestroyOnLoad(gameObject);
+                
+                if (HasStateAuthority)
+                {
+                    InitializeGame();
+                }
             }
             else
             {
@@ -35,72 +42,170 @@ namespace Game.Managers
             }
         }
 
-        private void Start()
+        private void InitializeGame()
         {
-            if (mUI == null)
-                mUI = FindObjectOfType<Game2DUI>();
-                
-            if (mGameEndPanel == null)
-                mGameEndPanel = FindObjectOfType<GameEndPanel>();
-            
-            StartCoroutine(GameTimer());
-        }
+            TimeRemaining = matchDuration;
+            GameStarted = false;
+            GameEnded = false;
 
-        private IEnumerator GameTimer()
-        {
-            while (mCurrentTime > 0 && !mGameEnded)
+            // Spawn ScoreManager
+            if (scoreManagerPrefab != null)
             {
-                mCurrentTime -= Time.deltaTime;
-                
-                // Update UI timer
-                if (mUI != null)
-                    mUI.UpdateTimer(mCurrentTime);
-                
-                yield return null;
+                var scoreManagerObj = Runner.Spawn(scoreManagerPrefab);
+                mScoreManager = scoreManagerObj.GetComponent<ScoreManager>();
             }
-            
-            // Time's up!
-            EndGame();
+            else
+            {
+                // Fallback - create ScoreManager on this object
+                mScoreManager = gameObject.AddComponent<ScoreManager>();
+            }
+
+            StartCoroutine(RegisterPlayersAfterDelay());
         }
 
-        public void EndGame()
+        private IEnumerator RegisterPlayersAfterDelay()
         {
-            if (mGameEnded) return;
+            yield return new WaitForSeconds(1f);
+            RegisterAllPlayers();
+            StartGame();
+        }
+
+        public void RegisterAllPlayers()
+        {
+            if (!HasStateAuthority) return;
+
+            var allPlayers = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
             
-            mGameEnded = true;
-            Debug.Log("Game Ended!");
-            
-            // Notify all systems
-            OnGameEnded?.Invoke();
-            
-            // Show game end panel
-            if (mGameEndPanel != null)
+            foreach (var player in allPlayers)
             {
-                mGameEndPanel.ShowGameEndResults();
+                RegisterPlayer(player);
             }
         }
 
-        public void UpdatePlayerStats(Fusion.NetworkRunner runner, Fusion.PlayerRef player, float health, float maxHealth, float stamina, float maxStamina, int score)
+        public void RegisterPlayer(PlayerController player)
         {
-            if (player == runner.LocalPlayer)
+            if (!HasStateAuthority || mRegisteredPlayers.Contains(player)) return;
+
+            mRegisteredPlayers.Add(player);
+            
+            if (mScoreManager != null)
             {
-                if (mUI != null)
+                mScoreManager.RegisterPlayer(player);
+            }
+
+            RPC_UpdatePlayerRegistration(player.Object.Id);
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        private void RPC_UpdatePlayerRegistration(NetworkId playerId)
+        {
+            var playerObj = Runner.FindObject(playerId);
+            if (playerObj != null)
+            {
+                var player = playerObj.GetComponent<PlayerController>();
+                if (player != null && !mRegisteredPlayers.Contains(player))
                 {
-                    mUI.SetHealth(health, maxHealth);
-                    mUI.SetStamina(stamina, maxStamina);
-                    mUI.UpdateScore(score);
+                    mRegisteredPlayers.Add(player);
                 }
             }
         }
 
-        public float GetTimeLeft()
+        public void StartGame()
         {
-            return mCurrentTime;
+            if (!HasStateAuthority || GameStarted) return;
+
+            GameStarted = true;
+            TimeRemaining = matchDuration;
+            
+            RPC_GameStarted();
         }
 
-        public bool IsGameEnded()
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        private void RPC_GameStarted()
         {
-            return mGameEnded;
+            if (Game2DUI.Instance != null)
+            {
+                Game2DUI.Instance.UpdateTimer(TimeRemaining);
+            }
+        }
+
+        public override void FixedUpdateNetwork()
+        {
+            if (!HasStateAuthority || !GameStarted || GameEnded) return;
+
+            TimeRemaining -= Runner.DeltaTime;
+            
+            if (TimeRemaining <= 0f)
+            {
+                EndGame();
+            }
+
+            if (Runner.Tick % 30 == 0)
+            {
+                UpdateGameUI();
+            }
+        }
+
+        private void UpdateGameUI()
+        {
+            RPC_UpdateGameUI(TimeRemaining);
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        private void RPC_UpdateGameUI(float timeLeft)
+        {
+            if (Game2DUI.Instance != null)
+            {
+                Game2DUI.Instance.UpdateTimer(timeLeft);
+            }
+
+            if (mScoreManager != null)
+            {
+                mScoreManager.UpdatePlayerStats();
+            }
+        }
+
+        private void EndGame()
+        {
+            if (GameEnded) return;
+
+            GameEnded = true;
+            TimeRemaining = 0f;
+            
+            RPC_GameEnded();
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        private void RPC_GameEnded()
+        {
+            Debug.Log("Game Ended!");
+    
+            if (mScoreManager != null)
+            {
+                var leaderboard = mScoreManager.GetLeaderboard();
+                Debug.Log("Final Leaderboard:");
+                for (int i = 0; i < leaderboard.Count; i++)
+                {
+                    var entry = leaderboard[i];
+                    Debug.Log($"{i + 1}. {entry.playerName} - Score: {entry.playerScore.score}");
+                }
+            }
+
+            OnGameEnded?.Invoke();
+        }
+
+        public void UpdatePlayerStats()
+        {
+            if (mScoreManager != null)
+            {
+                mScoreManager.UpdatePlayerStats();
+            }
+        }
+
+        public override void Despawned(NetworkRunner runner, bool hasState)
+        {
+            if (Instance == this)
+                Instance = null;
         }
     }
 }
