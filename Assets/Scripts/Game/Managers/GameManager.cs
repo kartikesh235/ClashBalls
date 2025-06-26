@@ -13,7 +13,6 @@ namespace Game.Managers
 
         [Header("Game Settings")]
         public float matchDuration = 90f;
-        public GameObject scoreManagerPrefab;
 
         [Networked] public float TimeRemaining { get; private set; }
         [Networked] public bool GameStarted { get; private set; }
@@ -21,7 +20,7 @@ namespace Game.Managers
 
         public static System.Action OnGameEnded; // Event for GameEndPanel
 
-        private ScoreManager mScoreManager;
+        public ScoreManager scoreManager;
         private List<PlayerController> mRegisteredPlayers = new List<PlayerController>();
 
         public override void Spawned()
@@ -47,18 +46,6 @@ namespace Game.Managers
             TimeRemaining = matchDuration;
             GameStarted = false;
             GameEnded = false;
-
-            // Spawn ScoreManager
-            if (scoreManagerPrefab != null)
-            {
-                var scoreManagerObj = Runner.Spawn(scoreManagerPrefab);
-                mScoreManager = scoreManagerObj.GetComponent<ScoreManager>();
-            }
-            else
-            {
-                // Fallback - create ScoreManager on this object
-                mScoreManager = gameObject.AddComponent<ScoreManager>();
-            }
 
             StartCoroutine(RegisterPlayersAfterDelay());
         }
@@ -88,9 +75,9 @@ namespace Game.Managers
 
             mRegisteredPlayers.Add(player);
             
-            if (mScoreManager != null)
+            if (scoreManager != null)
             {
-                mScoreManager.RegisterPlayer(player);
+                scoreManager.RegisterPlayer(player);
             }
 
             RPC_UpdatePlayerRegistration(player.Object.Id);
@@ -159,9 +146,9 @@ namespace Game.Managers
                 Game2DUI.Instance.UpdateTimer(timeLeft);
             }
 
-            if (mScoreManager != null)
+            if (scoreManager != null)
             {
-                mScoreManager.UpdatePlayerStats();
+                scoreManager.UpdatePlayerStats();
             }
         }
 
@@ -180,14 +167,14 @@ namespace Game.Managers
         {
             Debug.Log("Game Ended!");
     
-            if (mScoreManager != null)
+            if (ScoreManager.Instance != null)
             {
-                var leaderboard = mScoreManager.GetLeaderboard();
+                var leaderboard = ScoreManager.Instance.GetSortedScores();
                 Debug.Log("Final Leaderboard:");
                 for (int i = 0; i < leaderboard.Count; i++)
                 {
                     var entry = leaderboard[i];
-                    Debug.Log($"{i + 1}. {entry.playerName} - Score: {entry.playerScore.score}");
+                    Debug.Log($"{i + 1}. {entry.playerName} - Score: {entry.totalScore}");
                 }
             }
 
@@ -196,9 +183,9 @@ namespace Game.Managers
 
         public void UpdatePlayerStats()
         {
-            if (mScoreManager != null)
+            if (scoreManager != null)
             {
-                mScoreManager.UpdatePlayerStats();
+                scoreManager.UpdatePlayerStats();
             }
         }
 

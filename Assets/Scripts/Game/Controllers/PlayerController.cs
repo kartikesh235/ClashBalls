@@ -139,15 +139,13 @@ namespace Game.Controllers
         }
 
         public override void Despawned(NetworkRunner runner, bool hasState)
-        {
-            // Unregister from GameManager if we were registered
-            if (mHasRegisteredWithGameManager && GameManager.Instance != null)
-            {
-                if (Object != null && Object.InputAuthority != default(PlayerRef))
-                {
-                    Debug.Log($"Unregistering {gameObject.name} from GameManager");
-                }
-            }
-        }
+{
+    // Unregister from ScoreManager if we were registered
+    if (mHasRegisteredWithGameManager && ScoreManager.Instance != null)
+    {
+        ScoreManager.Instance.UnregisterPlayer(this);
+        Debug.Log($"Unregistering {gameObject.name} from ScoreManager");
+    }
+}
     }
 }

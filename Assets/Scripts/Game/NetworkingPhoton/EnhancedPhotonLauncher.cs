@@ -12,6 +12,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Unity.Cinemachine;
+using Random = UnityEngine.Random;
 
 namespace Game.NetworkingPhoton
 {   
@@ -157,6 +158,7 @@ namespace Game.NetworkingPhoton
         {
             // Spawn NPC
             var npcObj = runner.Spawn(npcPrefab, spawnPosition, spawnRotation, null);
+            npcObj.gameObject.name = npcObj.gameObject.name + Random.Range(1, 1000);
             
             // IMPORTANT: Disable human input IMMEDIATELY after spawn
             var humanInput = npcObj.GetComponent<MmInputService>();

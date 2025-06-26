@@ -22,6 +22,8 @@ namespace Game.Managers
             public int kills;
             public int deaths;
             public int playerRefId;
+            public bool isNPC;
+            public int objectId; // For NPCs, we'll use Object.Id
         }
 
         // Public struct for UI compatibility
@@ -34,13 +36,14 @@ namespace Game.Managers
             public int deathCount;
             public bool isNPC;
             public PlayerRef playerRef;
+            public int objectId;
         }
 
-        [Networked, Capacity(4)] 
-        public NetworkDictionary<PlayerRef, PlayerScore> PlayerScores => default;
+        [Networked, Capacity(8)] // Increased capacity for multiple NPCs
+        public NetworkDictionary<int, PlayerScore> PlayerScores => default; // Using int as key instead of PlayerRef
 
-        private Dictionary<PlayerRef, PlayerController> mRegisteredPlayers = new Dictionary<PlayerRef, PlayerController>();
-        private Dictionary<PlayerRef, string> mPlayerNames = new Dictionary<PlayerRef, string>();
+        private Dictionary<int, PlayerController> mRegisteredPlayers = new Dictionary<int, PlayerController>();
+        private Dictionary<int, string> mPlayerNames = new Dictionary<int, string>();
 
         public override void Spawned()
         {
@@ -70,44 +73,77 @@ namespace Game.Managers
         {
             if (!HasStateAuthority) return;
 
-            var playerRef = player.Object.InputAuthority;
+            int playerId = GetUniquePlayerId(player);
             
-            if (!mRegisteredPlayers.ContainsKey(playerRef))
+            if (!mRegisteredPlayers.ContainsKey(playerId))
             {
-                mRegisteredPlayers[playerRef] = player;
+                mRegisteredPlayers[playerId] = player;
                 
-                string playerName = player.IsNPC() ? $"NPC {playerRef.PlayerId}" : $"Player {playerRef.PlayerId}";
-                mPlayerNames[playerRef] = playerName;
+                string playerName;
+                bool isNPC = player.IsNPC();
+                
+                if (isNPC)
+                {
+                    // Create unique NPC names
+                    int npcCount = mRegisteredPlayers.Values.Count(p => p.IsNPC()) + 1;
+                    playerName = $"NPC {npcCount}";
+                }
+                else
+                {
+                    playerName = $"Player {player.Object.InputAuthority.PlayerId}";
+                }
+                
+                mPlayerNames[playerId] = playerName;
                 
                 var newScore = new PlayerScore
                 {
                     score = 0,
                     kills = 0,
                     deaths = 0,
-                    playerRefId = playerRef.PlayerId
+                    playerRefId = isNPC ? 0 : player.Object.InputAuthority.PlayerId,
+                    isNPC = isNPC,
+                    objectId = (int)player.Object.Id.Raw
                 };
                 
-                PlayerScores.Set(playerRef, newScore);
-                RPC_UpdatePlayerName(playerRef, playerName);
+                PlayerScores.Set(playerId, newScore);
+                RPC_UpdatePlayerName(playerId, playerName);
                 UpdateAllUI();
+                
+                Debug.Log($"Registered player: {playerName} with ID: {playerId} (IsNPC: {isNPC})");
+            }
+        }
+
+        private int GetUniquePlayerId(PlayerController player)
+        {
+            if (player.IsNPC())
+            {
+                // For NPCs, use their Object.Id.Raw as unique identifier
+                return (int)player.Object.Id.Raw;
+            }
+            else
+            {
+                // For humans, use their PlayerId but offset to avoid conflicts with NPC Object IDs
+                return player.Object.InputAuthority.PlayerId + 1000000; // Large offset
             }
         }
 
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-        private void RPC_UpdatePlayerName(PlayerRef playerRef, string playerName)
+        private void RPC_UpdatePlayerName(int playerId, string playerName)
         {
-            mPlayerNames[playerRef] = playerName;
+            mPlayerNames[playerId] = playerName;
         }
 
-        public void UnregisterPlayer(PlayerRef playerRef)
+        public void UnregisterPlayer(PlayerController player)
         {
             if (!HasStateAuthority) return;
 
-            if (mRegisteredPlayers.ContainsKey(playerRef))
+            int playerId = GetUniquePlayerId(player);
+            
+            if (mRegisteredPlayers.ContainsKey(playerId))
             {
-                mRegisteredPlayers.Remove(playerRef);
-                mPlayerNames.Remove(playerRef);
-                PlayerScores.Remove(playerRef);
+                mRegisteredPlayers.Remove(playerId);
+                mPlayerNames.Remove(playerId);
+                PlayerScores.Remove(playerId);
                 UpdateAllUI();
             }
         }
@@ -116,25 +152,23 @@ namespace Game.Managers
         {
             if (!HasStateAuthority) return;
 
-            var attackerRef = attacker.Object.InputAuthority;
-            var victimRef = victim.Object.InputAuthority;
+            int attackerId = GetUniquePlayerId(attacker);
+            int victimId = GetUniquePlayerId(victim);
 
-            // Update attacker's score
-            if (PlayerScores.TryGet(attackerRef, out var attackerScore))
+            if (PlayerScores.TryGet(attackerId, out var attackerScore))
             {
                 attackerScore.kills++;
                 attackerScore.score += 100;
-                PlayerScores.Set(attackerRef, attackerScore);
+                PlayerScores.Set(attackerId, attackerScore);
                 
                 // Trigger UI update event
                 OnScoreUpdated?.Invoke(attacker, attackerScore.score, attackerScore.kills);
             }
 
-            // Update victim's deaths
-            if (PlayerScores.TryGet(victimRef, out var victimScore))
+            if (PlayerScores.TryGet(victimId, out var victimScore))
             {
                 victimScore.deaths++;
-                PlayerScores.Set(victimRef, victimScore);
+                PlayerScores.Set(victimId, victimScore);
             }
 
             UpdateAllUI();
@@ -144,12 +178,12 @@ namespace Game.Managers
         {
             if (!HasStateAuthority) return;
 
-            var playerRef = player.Object.InputAuthority;
+            int playerId = GetUniquePlayerId(player);
             
-            if (PlayerScores.TryGet(playerRef, out var playerScore))
+            if (PlayerScores.TryGet(playerId, out var playerScore))
             {
                 playerScore.score += points;
-                PlayerScores.Set(playerRef, playerScore);
+                PlayerScores.Set(playerId, playerScore);
                 
                 // Trigger UI update event
                 OnScoreUpdated?.Invoke(player, playerScore.score, playerScore.kills);
@@ -157,31 +191,33 @@ namespace Game.Managers
             }
         }
 
-        public int GetPlayerScore(PlayerRef playerRef)
+        public int GetPlayerScore(PlayerController player)
         {
-            if (PlayerScores.TryGet(playerRef, out var playerScore))
+            int playerId = GetUniquePlayerId(player);
+            if (PlayerScores.TryGet(playerId, out var playerScore))
             {
                 return playerScore.score;
             }
             return 0;
         }
 
-        public int GetPlayerKills(PlayerRef playerRef)
+        public int GetPlayerKills(PlayerController player)
         {
-            if (PlayerScores.TryGet(playerRef, out var playerScore))
+            int playerId = GetUniquePlayerId(player);
+            if (PlayerScores.TryGet(playerId, out var playerScore))
             {
                 return playerScore.kills;
             }
             return 0;
         }
 
-        public string GetPlayerName(PlayerRef playerRef)
+        public string GetPlayerName(int playerId)
         {
-            if (mPlayerNames.TryGetValue(playerRef, out var name))
+            if (mPlayerNames.TryGetValue(playerId, out var name))
             {
                 return name;
             }
-            return $"Player {playerRef.PlayerId}";
+            return $"Unknown Player {playerId}";
         }
 
         // Method for Game2DUI - returns PlayerScoreUI list
@@ -192,7 +228,6 @@ namespace Game.Managers
             foreach (var kvp in PlayerScores)
             {
                 string playerName = GetPlayerName(kvp.Key);
-                bool isNPC = mRegisteredPlayers.ContainsKey(kvp.Key) && mRegisteredPlayers[kvp.Key].IsNPC();
                 
                 allScores.Add(new PlayerScoreUI
                 {
@@ -200,8 +235,8 @@ namespace Game.Managers
                     totalScore = kvp.Value.score,
                     killCount = kvp.Value.kills,
                     deathCount = kvp.Value.deaths,
-                    isNPC = isNPC,
-                    playerRef = kvp.Key
+                    isNPC = kvp.Value.isNPC,
+                    objectId = kvp.Value.objectId
                 });
             }
 
@@ -213,19 +248,6 @@ namespace Game.Managers
         {
             var scores = GetAllScores();
             return scores.OrderByDescending(x => x.totalScore).ToList();
-        }
-
-        public List<(PlayerRef playerRef, PlayerScore playerScore, string playerName)> GetLeaderboard()
-        {
-            var leaderboard = new List<(PlayerRef playerRef, PlayerScore playerScore, string playerName)>();
-    
-            foreach (var kvp in PlayerScores)
-            {
-                string playerName = GetPlayerName(kvp.Key);
-                leaderboard.Add((kvp.Key, kvp.Value, playerName));
-            }
-    
-            return leaderboard.OrderByDescending(x => x.playerScore.score).ToList();
         }
 
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
@@ -250,21 +272,19 @@ namespace Game.Managers
             var localPlayer = FindLocalPlayer();
             if (localPlayer != null)
             {
-                var localRef = localPlayer.Object.InputAuthority;
-                ui.UpdateScore(GetPlayerScore(localRef));
-                ui.UpdateKillCounter(GetPlayerKills(localRef)); // Fixed method name
+                ui.UpdateScore(GetPlayerScore(localPlayer));
+                ui.UpdateKillCounter(GetPlayerKills(localPlayer));
             }
 
             // Update all players info
             var allScores = GetAllScores();
             ui.UpdateAllPlayersInfo(allScores);
         }
-        
 
         private PlayerController FindLocalPlayer()
         {
             var allPlayers = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
-            return allPlayers.FirstOrDefault(p => p.Object.HasInputAuthority);
+            return allPlayers.FirstOrDefault(p => p.Object.HasInputAuthority && !p.IsNPC());
         }
 
         public void UpdatePlayerStats()
