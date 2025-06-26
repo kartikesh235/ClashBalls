@@ -88,6 +88,11 @@ namespace Game.Character
                 transform.position = healingPosition.position;
                 transform.rotation = healingPosition.rotation;
             }
+
+            if (mHealingCoroutine != null)
+            {
+                StopCoroutine(mHealingCoroutine);
+            }
             
             // Start healing process
             mHealingCoroutine = StartCoroutine(HealingProcess());

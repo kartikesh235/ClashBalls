@@ -2,6 +2,7 @@ using Fusion;
 using Game.AnimationControl;
 using Game.Character;
 using Game.Controllers;
+using Game.Managers;
 using UnityEngine;
 
 namespace Game.Abilities
@@ -149,8 +150,17 @@ namespace Game.Abilities
             var rb = target.GetComponent<Rigidbody>();
             if (rb != null)
                 rb.AddForce(direction * TypeData.tackleForce, ForceMode.VelocityChange);
+    
+            // Apply damage
+            var healthSystem = target.GetComponent<PlayerHealthSystem>();
+            if (healthSystem != null && healthSystem.CanTakeDamage())
+            {
+                healthSystem.TakeDamage(TypeData.tackleForce, GetComponent<PlayerController>());
+        
+                // Add score
+                ScoreManager.Instance.AddScore(GetComponent<PlayerController>(), (int)TypeData.tackleForce, "Tackle");
+            }
         }
-
         private void DisableOpponentMovement(NetworkObject target)
         {
             if (target.HasInputAuthority)

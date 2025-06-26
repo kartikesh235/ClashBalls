@@ -18,9 +18,9 @@ MonoBehaviour:
   tackleRange: 3
   throwRange: 6
   parryRange: 5
-  dodgeChance: 0.7
+  dodgeChance: 0.5
   parryChance: 0.3
-  tackleChance: 0.8
+  tackleChance: 0.3
   decisionCooldown: 0.3
   combatCooldown: 2
   lowStaminaThreshold: 0.3

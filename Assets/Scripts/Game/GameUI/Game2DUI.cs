@@ -1,28 +1,36 @@
 using System.Collections;
+using System.Collections.Generic;
 using MoreMountains.Tools;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Fusion;
+using Game.Managers;
+using Game.Controllers;
 
 namespace Game.GameUI
 {
     public class Game2DUI : MMSingleton<Game2DUI>
     {
+        [Header("Player Status (Left Side)")]
         public Slider healthSlider;
         public Slider staminaSlider;
-        public Slider throwSlider;
-        [SerializeField] private float mThrowSliderSmoothSpeed = 10f;
+        public TMP_Text playerNameText;
+
+        [Header("Game Info (Middle)")]
+        public TMP_Text killCounterText;
+        public TMP_Text timerText;
+        public TMP_Text scoreText;
+
+        [Header("All Players Info (Right Side)")]
+        public TMP_Text[] playerNamesTexts = new TMP_Text[4];
+        public TMP_Text[] playerScoresTexts = new TMP_Text[4];
+        public GameObject[] playerInfoPanels = new GameObject[4];
 
         [Header("Mobile UI")]
         public MMTouchJoystick joystick;
         public Button buttonA, buttonB, buttonC, buttonD, buttonE;
-
-        public TMP_Text timerText;
-        public Button startButton;
-        public TMP_Text scoreText;
-        public TMP_Text killsText;
 
         [Header("Masked UI")] 
         public Image buttonAMask;
@@ -37,28 +45,38 @@ namespace Game.GameUI
         public TMP_Text cooldownTimerTextD;
         public TMP_Text cooldownTimerTextE;
 
-        [Header("All Player Stats")]
-        public TMP_Text username1Text;
-        public TMP_Text username2Text;
-        public TMP_Text username3Text;
-        public TMP_Text username4Text;
-
-        public TMP_Text score1Text;
-        public TMP_Text score2Text;
-        public TMP_Text score3Text;
-        public TMP_Text score4Text;
-
-        public TMP_Text myPlayerUsernameText;
+        [Header("Throw Power")]
+        public Slider throwSlider;
+        [SerializeField] private float mThrowSliderSmoothSpeed = 10f;
 
         private Coroutine mThrowSliderCoroutine;
+        private List<ScoreManager.PlayerScore> mAllPlayerScores = new List<ScoreManager.PlayerScore>();
 
         private void Start()
+        {
+            InitializeUI();
+            ScoreManager.OnScoreUpdated += UpdatePlayerScores;
+        }
+
+        private void OnDestroy()
+        {
+            ScoreManager.OnScoreUpdated -= UpdatePlayerScores;
+        }
+
+        private void InitializeUI()
         {
             SetHealth(1f, 1f);
             SetStamina(1f, 1f);
             SetThrowPower(0f, 1f);
             UpdateScore(0);
-            UpdateKills(0);
+            UpdateKillCounter(0);
+            
+            // Initialize player info panels
+            for (int i = 0; i < playerInfoPanels.Length; i++)
+            {
+                if (playerInfoPanels[i] != null)
+                    playerInfoPanels[i].SetActive(false);
+            }
         }
 
         // Helper method to check if caller is local player
@@ -74,28 +92,7 @@ namespace Game.GameUI
             return caller.HasInputAuthority;
         }
 
-        // Helper method to check if caller is local player (with debug)
-        private bool IsLocalPlayerWithDebug(NetworkObject caller, string methodName)
-        {
-            if (caller == null) 
-            {
-                Debug.LogWarning($"Game2DUI.{methodName}: caller is null");
-                return false;
-            }
-            
-            var npcController = caller.GetComponent<Game.AI.NetworkedNPCControllerNew>();
-            if (npcController != null) 
-            {
-                Debug.Log($"Game2DUI.{methodName}: Ignoring NPC {caller.name}");
-                return false;
-            }
-            
-            bool hasInputAuth = caller.HasInputAuthority;
-            Debug.Log($"Game2DUI.{methodName}: Player {caller.name} HasInputAuthority: {hasInputAuth}");
-            return hasInputAuth;
-        }
-
-        // Updated methods with input authority checks
+        #region Player Status UI (Left Side)
         public void SetHealth(float current, float max, NetworkObject caller = null)
         {
             if (caller != null && !IsLocalPlayer(caller)) return;
@@ -110,16 +107,97 @@ namespace Game.GameUI
             staminaSlider.value = Mathf.Clamp01(current / max);
         }
 
+        public void SetPlayerName(string playerName, NetworkObject caller = null)
+        {
+            if (caller != null && !IsLocalPlayer(caller)) return;
+            
+            playerNameText.text = playerName;
+        }
+        #endregion
+
+        #region Game Info UI (Middle)
+        public void UpdateKillCounter(int kills, NetworkObject caller = null)
+        {
+            if (caller != null && !IsLocalPlayer(caller)) return;
+            
+            killCounterText.text = $"Kills: {kills}";
+        }
+
+        public void UpdateTimer(float timeLeft)
+        {
+            int minutes = Mathf.FloorToInt(timeLeft / 60f);
+            int seconds = Mathf.FloorToInt(timeLeft % 60f);
+            timerText.text = $"{minutes:00}:{seconds:00}";
+        }
+
+        public void UpdateScore(int score, NetworkObject caller = null)
+        {
+            if (caller != null && !IsLocalPlayer(caller)) return;
+            
+            scoreText.text = $"Score: {score}";
+        }
+        #endregion
+
+        #region All Players Info UI (Right Side)
+        public void UpdateAllPlayersInfo(List<ScoreManager.PlayerScore> allScores)
+        {
+            mAllPlayerScores = allScores;
+            
+            // Sort by score (highest first)
+            var sortedScores = new List<ScoreManager.PlayerScore>(allScores);
+            sortedScores.Sort((a, b) => b.totalScore.CompareTo(a.totalScore));
+            
+            for (int i = 0; i < playerInfoPanels.Length; i++)
+            {
+                if (i < sortedScores.Count)
+                {
+                    // Show player info
+                    playerInfoPanels[i].SetActive(true);
+                    
+                    var playerScore = sortedScores[i];
+                    string displayName = playerScore.isNPC ? $"[NPC] {playerScore.playerName}" : playerScore.playerName;
+                    
+                    playerNamesTexts[i].text = displayName;
+                    playerScoresTexts[i].text = playerScore.totalScore.ToString();
+                }
+                else
+                {
+                    // Hide unused panels
+                    playerInfoPanels[i].SetActive(false);
+                }
+            }
+        }
+
+        private void UpdatePlayerScores(PlayerController player, int newScore, int killCount)
+        {
+            // Update the specific player's data
+            if (ScoreManager.Instance != null)
+            {
+                var allScores = ScoreManager.Instance.GetAllScores();
+                UpdateAllPlayersInfo(allScores);
+                
+                // Update local player's kill counter if this is the local player
+                var localPlayerController = FindObjectOfType<PlayerController>();
+                if (localPlayerController != null && player == localPlayerController)
+                {
+                    UpdateKillCounter(killCount);
+                    UpdateScore(newScore);
+                }
+            }
+        }
+        #endregion
+
+        #region Throw Power UI
         public void SetThrowPower(float current, float max, NetworkObject caller = null)
         {
-            if (caller != null && !IsLocalPlayerWithDebug(caller, "SetThrowPower")) return;
+            if (caller != null && !IsLocalPlayer(caller)) return;
             
             throwSlider.value = Mathf.Clamp01(current / max);
         }
 
         public void SetThrowPower(float targetValue, NetworkObject caller = null)
         {
-            if (caller != null && !IsLocalPlayerWithDebug(caller, "SetThrowPower")) return;
+            if (caller != null && !IsLocalPlayer(caller)) return;
             
             targetValue = Mathf.Clamp(targetValue, throwSlider.minValue, throwSlider.maxValue);
 
@@ -139,54 +217,25 @@ namespace Game.GameUI
             throwSlider.maxValue = max;
         }
 
-        public void UpdateScore(int score, NetworkObject caller = null)
+        private IEnumerator SmoothSetThrowSlider(float target)
         {
-            if (caller != null && !IsLocalPlayer(caller)) return;
-            
-            scoreText.text = $"Score: {score}";
-        }
+            while (!Mathf.Approximately(throwSlider.value, target))
+            {
+                throwSlider.value = Mathf.MoveTowards(
+                    throwSlider.value,
+                    target,
+                    mThrowSliderSmoothSpeed * Time.deltaTime
+                );
 
-        public void UpdateKills(int kills, NetworkObject caller = null)
-        {
-            if (caller != null && !IsLocalPlayer(caller)) return;
-            
-            killsText.text = $"Kills: {kills}";
-        }
+                yield return null;
+            }
 
-        // Overloaded methods for backward compatibility
-        public void SetHealth(float current, float max)
-        {
-            healthSlider.value = Mathf.Clamp01(current / max);
+            throwSlider.value = target;
+            mThrowSliderCoroutine = null;
         }
+        #endregion
 
-        public void SetStamina(float current, float max)
-        {
-            staminaSlider.value = Mathf.Clamp01(current / max);
-        }
-
-        public void SetThrowPower(float current, float max)
-        {
-            throwSlider.value = Mathf.Clamp01(current / max);
-        }
-
-        public void UpdateScore(int score)
-        {
-            scoreText.text = $"Score: {score}";
-        }
-
-        public void UpdateKills(int kills)
-        {
-            killsText.text = $"Kills: {kills}";
-        }
-
-        // Rest of existing methods remain unchanged
-        public void UpdateTimer(float timeLeft)
-        {
-            int minutes = Mathf.FloorToInt(timeLeft / 60f);
-            int seconds = Mathf.FloorToInt(timeLeft % 60f);
-            timerText.text = $"{minutes:00}:{seconds:00}";
-        }
-
+        #region Cooldown UI
         public static void SetCooldownMask(Button button, Image mask, TMP_Text text, float cooldownRemaining, float totalCooldown)
         {
             if (mask == null || text == null) return;
@@ -210,50 +259,33 @@ namespace Game.GameUI
                 text.text = "";
             }
         }
+        #endregion
 
-        public void SetPlayerStats(int index, string username, int score)
+        #region Backward Compatibility Methods
+        public void SetHealth(float current, float max)
         {
-            switch (index)
-            {
-                case 0:
-                    username1Text.text = username;
-                    score1Text.text = score.ToString();
-                    break;
-                case 1:
-                    username2Text.text = username;
-                    score2Text.text = score.ToString();
-                    break;
-                case 2:
-                    username3Text.text = username;
-                    score3Text.text = score.ToString();
-                    break;
-                case 3:
-                    username4Text.text = username;
-                    score4Text.text = score.ToString();
-                    break;
-            }
+            healthSlider.value = Mathf.Clamp01(current / max);
         }
 
-        private IEnumerator SmoothSetThrowSlider(float target)
+        public void SetStamina(float current, float max)
         {
-            while (!Mathf.Approximately(throwSlider.value, target))
-            {
-                throwSlider.value = Mathf.MoveTowards(
-                    throwSlider.value,
-                    target,
-                    mThrowSliderSmoothSpeed * Time.deltaTime
-                );
-
-                yield return null;
-            }
-
-            throwSlider.value = target;
-            mThrowSliderCoroutine = null;
+            staminaSlider.value = Mathf.Clamp01(current / max);
         }
 
-        public void SetMyUsername(string username)
+        public void SetThrowPower(float current, float max)
         {
-            myPlayerUsernameText.text = username;
+            throwSlider.value = Mathf.Clamp01(current / max);
         }
+
+        public void UpdateScore(int score)
+        {
+            scoreText.text = $"Score: {score}";
+        }
+
+        public void UpdateKillCounter(int kills)
+        {
+            killCounterText.text = $"Kills: {kills}";
+        }
+        #endregion
     }
 }

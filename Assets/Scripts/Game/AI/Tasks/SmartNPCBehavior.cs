@@ -233,7 +233,7 @@ namespace Game.AI.Tasks
             }
             
             // Priority 4: Aggressive tackle (only if not near boundary to avoid corner traps)
-            if (mDistanceToEnemy <= GetTackleRange() && !mIsNearBoundary && 
+            if (mDistanceToEnemy <= aiSettings.tackleRange && !mIsNearBoundary && 
                 staminaRatio > aiSettings.aggressiveStaminaThreshold)
             {
                 if (Random.value < aiSettings.tackleChance)

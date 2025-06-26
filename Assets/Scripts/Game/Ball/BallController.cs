@@ -4,6 +4,7 @@ using Game.Abilities;
 using UnityEngine;
 using Game.Controllers;
 using Game.Character;
+using Game.Managers;
 
 namespace Game.Ball
 {
@@ -19,6 +20,10 @@ namespace Game.Ball
 
         private GameObject _carrier;
         public CharacterTypeSO typeData;
+        
+        [Header("Ball Damage")]
+        public float ballDamage = 25f;
+        public bool hasHitGround = false;
 
         public override void Spawned()
         {
@@ -49,23 +54,7 @@ namespace Game.Ball
             }
             PickupCooldown = TickTimer.CreateFromSeconds(Runner, 0.5f);
         }
-
-        public void Throw(Vector3 dir, float force, GameObject carrier)
-        {
-            if (!HasStateAuthority || !IsHeld) return;
-
-            IsHeld = false;
-            _carrier = carrier;
-
-            transform.SetParent(null);
-            _rb.Rigidbody.isKinematic = false;
-            _rb.Rigidbody.linearVelocity = dir.normalized * force;
-            Debug.LogError("Force Throw" + force);
-            _collider.enabled = true;
-            if (mTrail != null) mTrail.enabled = true;
-
-            PickupCooldown = TickTimer.CreateFromSeconds(Runner, 0.5f);
-        }
+        
 
         public override void FixedUpdateNetwork()
         {
@@ -85,9 +74,61 @@ namespace Game.Ball
             if (!HasStateAuthority || IsHeld) return;
 
             if (collision.gameObject.CompareTag("Wall"))
+            {
                 HandleWallBounce(collision);
+            }
+            else if (collision.gameObject.CompareTag("Ground"))
+            {
+                hasHitGround = true;
+            }
             else if (collision.gameObject.CompareTag("Player"))
+            {
                 HandlePlayerHit(collision.gameObject);
+            }
+        }
+
+        private void HandlePlayerHit(GameObject player)
+        {
+            if (player == _carrier) return;
+    
+            // Only do damage if ball hasn't hit ground yet
+            if (!hasHitGround && _carrier != null)
+            {
+                var healthSystem = player.GetComponent<PlayerHealthSystem>();
+                var thrower = _carrier.GetComponent<PlayerController>();
+        
+                if (healthSystem != null && healthSystem.CanTakeDamage())
+                {
+                    healthSystem.TakeDamage(ballDamage, thrower);
+            
+                    // Add score to thrower
+                    if (thrower != null)
+                    {
+                        ScoreManager.Instance.AddScore(thrower, (int)ballDamage, "Ball Hit");
+                    }
+                }
+            }
+    
+            // Reset ball state
+            hasHitGround = true;
+        }
+
+// Add to your Throw method:
+        public void Throw(Vector3 dir, float force, GameObject carrier)
+        {
+            if (!HasStateAuthority || !IsHeld) return;
+
+            IsHeld = false;
+            _carrier = carrier;
+            hasHitGround = false; // Reset ground hit status
+
+            transform.SetParent(null);
+            _rb.Rigidbody.isKinematic = false;
+            _rb.Rigidbody.linearVelocity = dir.normalized * force;
+            _collider.enabled = true;
+            if (mTrail != null) mTrail.enabled = true;
+
+            PickupCooldown = TickTimer.CreateFromSeconds(Runner, 0.5f);
         }
 
         private void HandleWallBounce(Collision collision)
@@ -100,23 +141,6 @@ namespace Game.Ball
                 reflected *= 1.5f;
 
             _rb.Rigidbody.linearVelocity = reflected;
-        }
-
-        private void HandlePlayerHit(GameObject player)
-        {
-            if (player == _carrier) return;
-            KnockoutPlayer(player);
-            DestroyBall();
-        }
-
-        private void KnockoutPlayer(GameObject player)
-        {
-            // Implementation to handle player knockout
-        }
-
-        private void DestroyBall()
-        {
-            // Runner.Despawn(Object);
         }
     }
 }
