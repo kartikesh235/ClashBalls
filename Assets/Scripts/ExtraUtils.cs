@@ -21,4 +21,16 @@ public static class ExtraUtils
         }
         action?.Invoke(endValue);
     }
+    
+    public static IEnumerator SetValueSmooth(System.Action<float> action,float startValue ,float endValue, float duration)
+    {
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            action?.Invoke(Mathf.Lerp(startValue, endValue, elapsed / duration));
+            yield return null;
+        }
+        action?.Invoke(endValue);
+    }
 }

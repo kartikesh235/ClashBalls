@@ -44,6 +44,8 @@ namespace Game.Managers
 
         private Dictionary<int, PlayerController> mRegisteredPlayers = new Dictionary<int, PlayerController>();
         private Dictionary<int, string> mPlayerNames = new Dictionary<int, string>();
+        
+        public string myPlayerName;
 
         public override void Spawned()
         {
@@ -106,6 +108,9 @@ namespace Game.Managers
                 };
                 
                 PlayerScores.Set(playerId, newScore);
+                if(player.Object.HasInputAuthority)
+                    myPlayerName = playerName;
+                
                 RPC_UpdatePlayerName(playerId, playerName);
                 UpdateAllUI();
                 

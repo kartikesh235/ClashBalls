@@ -96,7 +96,7 @@ namespace Game.AnimationControl
             }
 
             if (mLastAnimState != NetworkedAnimState)
-            {
+            {   
                 mAnim.SetInteger(State, (int)NetworkedAnimState);
                 mLastAnimState = NetworkedAnimState;
             }
@@ -148,18 +148,29 @@ namespace Game.AnimationControl
         
         public void SetHandSubState(HandSubState state)
         {
-            // Don't allow hand animations if stunned
-            if (IsStunnedState) return;
-            
-            if (mAnim == null) return;
-            
             mAnim.SetInteger(HandState, (int)state);
             if (state == HandSubState.Throw)
             {
-                StartCoroutine(ExtraUtils.SetValueSmoothAfterADelay(0.5f, (a) =>
+                mAnim.SetLayerWeight(1, 1.0f);
+                StartCoroutine(ExtraUtils.SetDelay(0.5f/1.5f, () =>
                 {
-                    mAnim.SetLayerWeight(1, a);
-                }, 1f, 0.0f, 1f));
+                    StartCoroutine(ExtraUtils.SetValueSmooth( (a)=>
+                    {
+                        mAnim.SetLayerWeight(1, a);
+                    },1f,0.0f,0.2f));
+                }));
+               
+            }
+            else if (state == HandSubState.Pickup)
+            {
+                mAnim.SetLayerWeight(1, 1f);
+                StartCoroutine(ExtraUtils.SetDelay(2f/3f, () =>
+                {
+                    StartCoroutine(ExtraUtils.SetValueSmooth( (a)=>
+                    {
+                        mAnim.SetLayerWeight(1, a);
+                    },1f,0.0f,0.2f));
+                }));
             }
         }
     }

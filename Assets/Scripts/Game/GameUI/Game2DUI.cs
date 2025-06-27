@@ -16,6 +16,8 @@ namespace Game.GameUI
         [Header("Player Status (Left Side)")]
         public Slider healthSlider;
         public Slider staminaSlider;
+        public TMP_Text healthText;
+        public TMP_Text staminaText;
         public TMP_Text playerNameText;
 
         [Header("Game Info (Middle)")]
@@ -51,11 +53,51 @@ namespace Game.GameUI
 
         private Coroutine mThrowSliderCoroutine;
         private List<ScoreManager.PlayerScoreUI> mAllPlayerScores = new List<ScoreManager.PlayerScoreUI>();
+        private PlayerController mLocalPlayer; // Cache local player reference
 
         private void Start()
         {
             InitializeUI();
             ScoreManager.OnScoreUpdated += UpdatePlayerScores;
+            
+            // Find and cache local player
+            StartCoroutine(FindLocalPlayerCoroutine());
+        }
+
+        private IEnumerator FindLocalPlayerCoroutine()
+        {
+            // Wait a bit for network to initialize
+            yield return new WaitForSeconds(3f);
+            
+            while (mLocalPlayer == null)
+            {
+                FindAndCacheLocalPlayer();
+                yield return new WaitForSeconds(0.5f);
+            }
+            
+            Debug.Log($"Local player found and cached: {mLocalPlayer.name}");
+        }
+
+        private void FindAndCacheLocalPlayer()
+        {
+            var allPlayers = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+            foreach (var player in allPlayers)
+            {
+                if (player.Object != null && player.Object.HasInputAuthority && !player.IsNPC())
+                {
+                    mLocalPlayer = player;
+                    UpdatePlayerNameUI();
+                    break;
+                }
+            }
+        }
+
+        private void UpdatePlayerNameUI()
+        {
+            if (mLocalPlayer != null && playerNameText != null)
+            {
+                playerNameText.text = ScoreManager.Instance.myPlayerName;
+            }
         }
 
         private void OnDestroy()
@@ -65,8 +107,8 @@ namespace Game.GameUI
 
         private void InitializeUI()
         {
-            SetHealth(1f, 1f);
-            SetStamina(1f, 1f);
+            SetHealth(100, 100);
+            SetStamina(3, 3);
             SetThrowPower(0f, 1f);
             UpdateScore(0);
             UpdateKillCounter(0);
@@ -82,29 +124,75 @@ namespace Game.GameUI
         // Helper method to check if caller is local player
         private bool IsLocalPlayer(NetworkObject caller)
         {
-            if (caller == null) return false;
+            if (caller == null)
+            {
+                Debug.LogWarning("Game2DUI.IsLocalPlayer: caller is null");
+                return false;
+            }
+            
+            // Check if it's our cached local player
+            if (mLocalPlayer != null && caller.gameObject == mLocalPlayer.gameObject)
+            {
+                return true;
+            }
             
             // For NPCs, never update local UI
             var npcController = caller.GetComponent<Game.AI.NetworkedNPCControllerNew>();
-            if (npcController != null) return false;
+            if (npcController != null) 
+            {
+                Debug.Log($"Game2DUI.IsLocalPlayer: {caller.name} is NPC, ignoring");
+                return false;
+            }
             
             // For human players, check if they have input authority
-            return caller.HasInputAuthority;
+            bool hasInputAuth = caller.HasInputAuthority;
+            Debug.Log($"Game2DUI.IsLocalPlayer: {caller.name} HasInputAuthority: {hasInputAuth}");
+            return hasInputAuth;
         }
 
         #region Player Status UI (Left Side)
         public void SetHealth(float current, float max, NetworkObject caller = null)
         {
-            if (caller != null && !IsLocalPlayer(caller)) return;
+            // If no caller specified, always update (for backward compatibility)
+            if (caller == null)
+            {
+                healthSlider.value = Mathf.Clamp01(current / max);
+                healthText.text = current+"/"+max;
+                Debug.Log($"Health updated directly: {current}/{max} = {healthSlider.value}");
+                return;
+            }
+            
+            if (!IsLocalPlayer(caller)) 
+            {
+                Debug.Log($"SetHealth ignored for {caller.name} - not local player");
+                return;
+            }
             
             healthSlider.value = Mathf.Clamp01(current / max);
+            healthText.text = current+"/"+max;
+            Debug.Log($"Health updated for local player: {current}/{max} = {healthSlider.value}");
         }
 
         public void SetStamina(float current, float max, NetworkObject caller = null)
         {
-            if (caller != null && !IsLocalPlayer(caller)) return;
+            // If no caller specified, always update (for backward compatibility)
+            if (caller == null)
+            {
+                staminaSlider.value = Mathf.Clamp01(current / max);
+                staminaText.text = (int)current + "/" + (int)max;
+                Debug.Log($"Stamina updated directly: {current}/{max} = {staminaSlider.value}");
+                return;
+            }
+            
+            if (!IsLocalPlayer(caller))
+            {
+                Debug.Log($"SetStamina ignored for {caller.name} - not local player");
+                return;
+            }
             
             staminaSlider.value = Mathf.Clamp01(current / max);
+            staminaText.text = (int)current + "/" + (int)max;
+            Debug.Log($"Stamina updated for local player: {current}/{max} = {staminaSlider.value}");
         }
 
         public void SetPlayerName(string playerName, NetworkObject caller = null)
@@ -177,8 +265,7 @@ namespace Game.GameUI
                 UpdateAllPlayersInfo(allScores);
                 
                 // Update local player's kill counter if this is the local player
-                var localPlayerController = FindObjectOfType<PlayerController>();
-                if (localPlayerController != null && player == localPlayerController)
+                if (mLocalPlayer != null && player == mLocalPlayer)
                 {
                     UpdateKillCounter(killCount);
                     UpdateScore(newScore);
@@ -261,15 +348,35 @@ namespace Game.GameUI
         }
         #endregion
 
+        #region Direct Update Methods (for local player)
+        // Add these methods for direct updates from health/stamina systems
+        public void UpdateLocalPlayerHealth(float current, float max)
+        {
+            healthSlider.value = Mathf.Clamp01(current / max);
+            healthText.text = current+"/"+max;
+            
+            Debug.Log($"Direct health update: {current}/{max} = {healthSlider.value}");
+        }
+
+        public void UpdateLocalPlayerStamina(float current, float max)
+        {
+            staminaSlider.value = Mathf.Clamp01(current / max);
+            staminaText.text = (int)current + "/" + (int)max;
+            Debug.Log($"Direct stamina update: {current}/{max} = {staminaSlider.value}");
+        }
+        #endregion
+
         #region Backward Compatibility Methods
         public void SetHealth(float current, float max)
         {
             healthSlider.value = Mathf.Clamp01(current / max);
+            healthText.text = current+"/"+max;
         }
 
         public void SetStamina(float current, float max)
         {
             staminaSlider.value = Mathf.Clamp01(current / max);
+            staminaText.text = (int)current + "/" + (int)max;
         }
 
         public void SetThrowPower(float current, float max)

@@ -31,8 +31,8 @@ namespace Game.AI.Tasks
         [SharedRequired] public SharedBool buttonA, buttonB, buttonC, buttonD;
         
         [Header("World Boundaries")]
-        public float worldBoundaryX = 23f;
-        public float worldBoundaryZ = 23f;
+        public float worldBoundaryX = 23.5f;
+        public float worldBoundaryZ = 23.5f;
         
         [Header("Movement Smoothing")]
         public float movementSmoothTime = 0.3f;
@@ -555,17 +555,17 @@ namespace Game.AI.Tasks
 
         private float GetDodgeStaminaCost()
         {
-            return 1f;
+            return mCharacterType.dodgeStaminaCost;
         }
 
         private float GetTackleStaminaCost()
         {
-            return 1f;
+            return mCharacterType.tackleStaminaCost;
         }
 
         private float GetParryStaminaCost()
         {
-            return 0.5f;
+            return mCharacterType.parryStaminaCost;
         }
         #endregion
 

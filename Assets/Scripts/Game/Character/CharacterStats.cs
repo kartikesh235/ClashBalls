@@ -1,9 +1,12 @@
 using System.Collections;
+using Fusion;
+using Game.Controllers;
+using Game.GameUI;
 using UnityEngine;
 
 namespace Game.Character
 {
-    public class CharacterStats : MonoBehaviour
+    public class CharacterStats : NetworkBehaviour
     {
         public float CurrentStamina { get; private set; }
         public float MaxStamina => typeData?.maxStamina ?? 3f;
@@ -24,6 +27,7 @@ namespace Game.Character
         {
             if (CurrentStamina < amount) return false;
             CurrentStamina -= amount;
+            UpdateStaminaUI();
             if (regenCoroutine != null) StopCoroutine(regenCoroutine);
             regenCoroutine = StartCoroutine(RegenDelay());
             return true;
@@ -32,6 +36,7 @@ namespace Game.Character
         public void RecoverStamina(float amount)
         {
             CurrentStamina = Mathf.Min(CurrentStamina + amount, typeData.maxStamina);
+            UpdateStaminaUI();
         }
 
         public bool HasStamina(float amount)
@@ -45,7 +50,20 @@ namespace Game.Character
             while (CurrentStamina < typeData.maxStamina)
             {
                 CurrentStamina += typeData.staminaRegenRate * Time.deltaTime;
+                UpdateStaminaUI();
                 yield return null;
+            }
+        }
+        
+        private void UpdateStaminaUI()
+        {
+            if (Game2DUI.Instance != null)
+            {
+                // Check if this is the local player
+                if (Object != null && Object.HasInputAuthority && !GetComponent<PlayerController>().IsNPC())
+                {
+                    Game2DUI.Instance.UpdateLocalPlayerStamina(CurrentStamina, MaxStamina);
+                }
             }
         }
     }

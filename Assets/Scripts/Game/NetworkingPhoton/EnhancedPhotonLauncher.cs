@@ -48,6 +48,11 @@ namespace Game.NetworkingPhoton
 
         private void StartLobby()
         {
+            // createa a random room name 
+            if (string.IsNullOrEmpty(roomInputField.text))
+            {
+                roomInputField.text = "Room_" + Guid.NewGuid().ToString().Substring(0, 8);
+            }
             if (mRunner == null)
             {
                 StartGame(GameMode.Host, roomInputField.text);

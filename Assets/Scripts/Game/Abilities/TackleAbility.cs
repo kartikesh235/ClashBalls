@@ -42,8 +42,11 @@ namespace Game.Abilities
 
         public override void HandleInput()
         {
-            if (!CanStartTackle()) return;
+            if (!CanStartTackle()) 
+                return;
 
+            if (!Stats.ConsumeStamina(TypeData.tackleStaminaCost))
+                return;
             StartTackle();
         }
 

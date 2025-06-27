@@ -67,7 +67,7 @@ namespace Game.Abilities
             if (!HasStateAuthority || !Input.ButtonBPressed || mIsDodging || mDodgeCooldownTimer > 0f)
                 return;
 
-            if (!Stats.ConsumeStamina(1f))
+            if (!Stats.ConsumeStamina(TypeData.dodgeStaminaCost))
                 return;
 
             // Determine dodge direction based on input or random
@@ -77,15 +77,16 @@ namespace Game.Abilities
             Vector3 origin = transform.position + dodgeDir * 0.1f;
             var physicsScene = Runner.GetPhysicsScene();
             float travelDistance;
-            if (physicsScene.Raycast(origin, dodgeDir, out var hit, mDodgeDistance, mWallMask))
-            {
-                travelDistance = hit.distance;
-            }
-            else
-            {
-                travelDistance = mDodgeDistance;
-            }
+            // if (physicsScene.Raycast(origin, dodgeDir, out var hit, mDodgeDistance, mWallMask))
+            // {
+            //     travelDistance = hit.distance;
+            // }
+            // else
+            // {
+            //    
+            // }
 
+            travelDistance = mDodgeDistance;
             // Set cooldown
             mDodgeCooldownTimer = TypeData.dodgeCooldown;
 

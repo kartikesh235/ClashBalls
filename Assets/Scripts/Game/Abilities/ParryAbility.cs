@@ -33,9 +33,12 @@ namespace Game.Abilities
         public override void HandleInput()
         {
             if (!HasStateAuthority) return;
+           
 
             if (Input.ButtonCPressed && !IsParrying)
             {
+                if (!Stats.ConsumeStamina(TypeData.parryStaminaCost))
+                    return;
                 IsParrying = true;
                 ParryTimer = TypeData.parryDuration;
                 

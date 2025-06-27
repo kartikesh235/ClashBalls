@@ -11,6 +11,8 @@ namespace Game.GameUI
         [Header("UI Components")]
         public Slider healthSlider;
         public Slider staminaSlider;
+        public TMP_Text healthText;
+        public TMP_Text staminaText;
         public TMP_Text attackPowerText;
         public TMP_Text healCountdownText;
         
@@ -65,6 +67,7 @@ namespace Game.GameUI
             if (mHealthSystem != null && healthSlider != null)
             {
                 healthSlider.value = mHealthSystem.HealthRatio;
+                healthText.text = $"{mHealthSystem.CurrentHealth:F0} / {mHealthSystem.maxHealth:F0}";
             }
         }
 
@@ -73,6 +76,7 @@ namespace Game.GameUI
             if (mStats != null && staminaSlider != null)
             {
                 staminaSlider.value = mStats.StaminaRatio;
+                staminaText.text = $"{mStats.CurrentStamina:F0} / {mStats.MaxStamina:F0}";
             }
         }
 

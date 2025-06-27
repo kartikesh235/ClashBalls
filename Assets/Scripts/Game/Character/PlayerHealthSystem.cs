@@ -64,7 +64,7 @@ namespace Game.Character
             
             CurrentHealth -= damage;
             CurrentHealth = Mathf.Max(0, CurrentHealth);
-            
+            UpdateHealthUI();
             if (CurrentHealth <= 0)
             {
                 NetworkId attackerId = attacker != null ? attacker.Object.Id : default(NetworkId);
@@ -197,7 +197,7 @@ namespace Game.Character
         {
             IsHealing = false;
             CurrentHealth = maxHealth;
-            
+            UpdateHealthUI();
             // Hide healing effects
             if (mUI3D != null)
             {
@@ -266,6 +266,17 @@ namespace Game.Character
         public bool CanTakeDamage()
         {
             return !IsHealing && !HasRespawnParry;
+        }
+        private void UpdateHealthUI()
+        {
+            if (Game2DUI.Instance != null)
+            {
+                // Check if this is the local player
+                if (Object != null && Object.HasInputAuthority && !mPlayerController.IsNPC())
+                {
+                    Game2DUI.Instance.UpdateLocalPlayerHealth(CurrentHealth, maxHealth);
+                }
+            }
         }
     }
 }
