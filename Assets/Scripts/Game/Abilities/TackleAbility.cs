@@ -4,6 +4,7 @@ using Game.Character;
 using Game.Controllers;
 using Game.Managers;
 using UnityEngine;
+using Fusion.Addons.Physics;
 
 namespace Game.Abilities
 {
@@ -143,31 +144,72 @@ namespace Game.Abilities
                 var target = results[i].GetComponentInParent<NetworkObject>();
                 if (target == null || target == Object) continue;
 
-                ApplyHitForce(target, direction);
-                DisableOpponentMovement(target);
+                // Only StateAuthority should handle tackle hits
+                if (HasStateAuthority)
+                {
+                    RPC_ApplyTackleHit(target.Id, direction, TypeData.tackleForce);
+                }
             }
         }
 
-        private void ApplyHitForce(NetworkObject target, Vector3 direction)
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        private void RPC_ApplyTackleHit(NetworkId targetId, Vector3 direction, float force)
         {
-            var rb = target.GetComponent<Rigidbody>();
-            if (rb != null)
-                rb.AddForce(direction * TypeData.tackleForce, ForceMode.VelocityChange);
-    
-            // Apply damage
-            var healthSystem = target.GetComponent<PlayerHealthSystem>();
-            if (healthSystem != null && healthSystem.CanTakeDamage())
+            var targetObj = Runner.FindObject(targetId);
+            if (targetObj == null) return;
+
+            var target = targetObj.GetComponent<PlayerController>();
+            if (target == null) return;
+
+            // Check for parry first
+            var parryAbility = target.GetComponent<ParryAbility>();
+            if (parryAbility != null && parryAbility.IsParrying)
             {
-                healthSystem.TakeDamage(TypeData.tackleForce, GetComponent<PlayerController>());
-        
-                // Add score
-                ScoreManager.Instance.AddScore(GetComponent<PlayerController>(), (int)TypeData.tackleForce, "Tackle");
+                Debug.Log($"Tackle parried by {target.name}");
+                return;
+            }
+
+            // Apply force through NetworkRigidbody if available, otherwise regular Rigidbody
+            ApplyNetworkedForce(targetObj, direction, force);
+
+            // Apply stun
+            var stunSystem = target.GetComponent<StunSystem>();
+            if (stunSystem != null)
+            {
+                stunSystem.ApplyStun(TypeData.tackleStunDuration);
+            }
+
+            // Apply damage (only on StateAuthority to avoid double damage)
+            if (HasStateAuthority)
+            {
+                var healthSystem = target.GetComponent<PlayerHealthSystem>();
+                if (healthSystem != null && healthSystem.CanTakeDamage())
+                {
+                    healthSystem.TakeDamage(TypeData.tackleAttackPower, GetComponent<PlayerController>());
+                    ScoreManager.Instance.AddScore(GetComponent<PlayerController>(), (int)TypeData.tackleAttackPower, "Tackle");
+                }
             }
         }
-        private void DisableOpponentMovement(NetworkObject target)
+
+        private void ApplyNetworkedForce(NetworkObject target, Vector3 direction, float force)
         {
-            if (target.HasInputAuthority)
-                RPC_DisableMovement(target);
+            // Try NetworkRigidbody3D first (Fusion networking)
+            var networkRb = target.GetComponent<NetworkRigidbody3D>();
+            if (networkRb != null && networkRb.Rigidbody != null)
+            {
+                // Use consistent force application regardless of network authority
+                networkRb.Rigidbody.AddForce(direction * force, ForceMode.VelocityChange);
+                Debug.Log($"Applied networked force {force} to {target.name} via NetworkRigidbody3D");
+                return;
+            }
+
+            // Fallback to regular Rigidbody
+            var rb = target.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.AddForce(direction * force, ForceMode.VelocityChange);
+                Debug.Log($"Applied force {force} to {target.name} via regular Rigidbody");
+            }
         }
 
         #endregion
@@ -182,44 +224,8 @@ namespace Game.Abilities
 
         #endregion
 
-        #region RPC & Re-enable Movement
+        #region Legacy Support
 
-        // Add this to your existing TackleAbility in the RPC_DisableMovement method:
-        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-       // Update the RPC in your existing TackleAbility
-        private void RPC_DisableMovement(NetworkObject target)
-        {
-            var pm = target.GetComponent<PlayerMovement>();
-            var parry = target.GetComponent<ParryAbility>();
-            var stunSystem = target.GetComponent<StunSystem>();
-    
-            // Check if target successfully parried
-            if (pm == null || parry.IsParrying)
-                return;
-   
-            if (pm == null) 
-                return;
-
-            // Apply stun instead of just disabling movement
-            if (stunSystem != null)
-            {
-                stunSystem.ApplyStun(TypeData.tackleStunDuration);
-            }
-            else
-            {
-                // Fallback to old system if no stun system
-                pm.enabled = false;
-                target.GetComponent<TackleAbility>().RunnerInvokeEnable(pm, TypeData.tackleStunDuration);
-            }
-    
-            // Apply damage
-            var healthSystem = target.GetComponent<PlayerHealthSystem>();
-            if (healthSystem != null && healthSystem.CanTakeDamage())
-            {
-                healthSystem.TakeDamage(TypeData.tackleForce, GetComponent<PlayerController>());
-              //  ScoreManager.Instance.AddScore(GetComponent<PlayerController>(), (int)TypeData.tackleForce, "Tackle");
-            }
-        }
         public void RunnerInvokeEnable(PlayerMovement targetMovement, float delay)
         {
             mCachedTarget = targetMovement;
