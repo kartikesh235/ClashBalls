@@ -31,14 +31,19 @@ namespace Game.AI.Tasks
         [SharedRequired] public SharedBool buttonA, buttonB, buttonC, buttonD;
         
         [Header("World Boundaries")]
-        public float worldBoundaryX = 23.5f;
-        public float worldBoundaryZ = 23.5f;
+        public float worldBoundaryX = 24f;
+        public float worldBoundaryZ = 24f;
         
         [Header("Movement Smoothing")]
         public float movementSmoothTime = 0.3f;
         public float directionChangeDelay = 1f;
         public float centerAttractionForce = 0.3f;
         public float cornerAvoidanceDistance = 5f;
+        
+        [Header("AI Parameters")]
+        [Range(0f, 1f)]
+        [UnityEngine.Tooltip("Controls throw accuracy: 0 = random throws, 1 = always accurate")]
+        public float throwPrecision = 1f;
         
         private NPCBehaviorState mCurrentState;
         private Vector3 mTargetBallPosition;
@@ -307,24 +312,52 @@ namespace Game.AI.Tasks
             return TaskStatus.Running;
         }
 
-        private TaskStatus HandleHuntingWithBall()
-        {
-            if (mTargetEnemyPosition == Vector3.zero)
-                return TaskStatus.Failure;
-                
-            // Smooth rotation toward enemy
-            Vector3 direction = (mTargetEnemyPosition - transform.position).normalized;
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction), Time.deltaTime * 2f);
-            
-            if (mDistanceToEnemy <= GetThrowRange())
-            {
-                buttonA.Value = true;
-                return TaskStatus.Success;
-            }
-            
-            MoveTowardsTargetSmooth(mTargetEnemyPosition, mDistanceToEnemy > 8f);
-            return TaskStatus.Running;
-        }
+       private TaskStatus HandleHuntingWithBall()
+{
+    if (mTargetEnemyPosition == Vector3.zero)
+        return TaskStatus.Failure;
+
+    Vector3 toEnemy = mTargetEnemyPosition - transform.position;
+    float distance = toEnemy.magnitude;
+
+    // Face the enemy smoothly
+    Vector3 directionToEnemy = toEnemy.normalized;
+    transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(directionToEnemy), Time.deltaTime * 2f);
+
+    // If within throw range, attempt a throw
+    if (distance <= GetThrowRange())
+    {
+        Vector3 throwDirection = GetPreciseThrowDirection(directionToEnemy);
+
+        // Optional debug to visualize deviation
+        Debug.DrawRay(transform.position + Vector3.up * 1.5f, throwDirection * 5f, Color.red, 1f);
+
+        // Face the direction we are throwing (optional, depending on game animation)
+        transform.rotation = Quaternion.LookRotation(throwDirection);
+
+        buttonA.Value = true;
+        return TaskStatus.Success;
+    }
+
+    // Otherwise, continue chasing enemy
+    MoveTowardsTargetSmooth(mTargetEnemyPosition, distance > 8f);
+    return TaskStatus.Running;
+}
+
+private Vector3 GetPreciseThrowDirection(Vector3 baseDirection)
+{
+    if (throwPrecision >= 1f)
+        return baseDirection;
+
+    float maxAngleOffset = Mathf.Lerp(40f, 0f, throwPrecision); // In degrees
+    float randomYaw = Random.Range(-maxAngleOffset, maxAngleOffset);
+
+    // Optionally, you could also randomize pitch (Y-axis) for a more chaotic throw
+    // float randomPitch = Random.Range(-maxAngleOffset * 0.5f, maxAngleOffset * 0.5f);
+
+    Quaternion deviation = Quaternion.Euler(0f, randomYaw, 0f);
+    return deviation * baseDirection;
+}
 
         private TaskStatus HandleReturningToCenter()
         {

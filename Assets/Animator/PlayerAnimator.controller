@@ -42,10 +42,10 @@ AnimatorStateTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0.14191803
-  m_TransitionOffset: 0
-  m_ExitTime: 0.006423463
-  m_HasExitTime: 1
+  m_TransitionDuration: 0.08442085
+  m_TransitionOffset: 0.018350152
+  m_ExitTime: 0.0064234617
+  m_HasExitTime: 0
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
@@ -111,7 +111,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Fallback
-  m_Speed: 1
+  m_Speed: 2
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 6378547037922237927}
