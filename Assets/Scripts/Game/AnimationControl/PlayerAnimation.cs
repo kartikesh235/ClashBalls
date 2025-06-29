@@ -12,7 +12,7 @@ namespace Game.AnimationControl
         DodgeRight = 2,
         Parry = 3,
         Tackle = 4,
-        Stunned = 5  // Add stunned state
+        Stunned = 5
     }
 
     public enum HandSubState
@@ -34,6 +34,7 @@ namespace Game.AnimationControl
 
         [Networked] private PlayerAnimState NetworkedAnimState { get; set; }
         [Networked] private bool IsStunnedState { get; set; }
+        [Networked] private bool IsResetting { get; set; }
         
         private PlayerAnimState mLastAnimState = PlayerAnimState.Locomotion;
 
@@ -54,12 +55,25 @@ namespace Game.AnimationControl
             }
             
             mLastAnimState = NetworkedAnimState;
+            
+            // Reset animation to idle state on spawn
+            if (HasStateAuthority)
+            {
+                ResetToIdleState();
+            }
         }
 
         public override void FixedUpdateNetwork()
         {
             if (HasStateAuthority)
             {
+                // If resetting, force idle animation
+                if (IsResetting)
+                {
+                    ForceIdleAnimation();
+                    return;
+                }
+                
                 // If stunned, force stunned animation and ignore all input
                 if (IsStunnedState)
                 {
@@ -68,9 +82,7 @@ namespace Game.AnimationControl
                         NetworkedAnimState = PlayerAnimState.Stunned;
                     }
                     
-                    // Force idle/stunned pose
-                    SetLocomotionState(0f, 0f);
-                    mAnim.SetFloat(RunMultiplier, 0f);
+                    ForceIdleAnimation();
                 }
                 else if (NetworkedAnimState == PlayerAnimState.Locomotion && mInput != null)
                 {
@@ -104,8 +116,8 @@ namespace Game.AnimationControl
 
         public void SetState(PlayerAnimState state)
         {
-            // Don't allow state changes if stunned
-            if (IsStunnedState && state != PlayerAnimState.Stunned) 
+            // Don't allow state changes if stunned or resetting
+            if ((IsStunnedState && state != PlayerAnimState.Stunned) || IsResetting) 
                 return;
                 
             if (NetworkedAnimState == state) 
@@ -128,12 +140,43 @@ namespace Game.AnimationControl
             }
         }
 
+        public void ResetToIdleState()
+        {
+            if (!HasStateAuthority) return;
+            
+            IsResetting = true;
+            NetworkedAnimState = PlayerAnimState.Locomotion;
+            IsStunnedState = false;
+            
+            StartCoroutine(ExtraUtils.SetDelay(0.1f, () =>
+            {
+                IsResetting = false;
+            }));
+        }
+
+        private void ForceIdleAnimation()
+        {
+            if (mAnim == null) return;
+            
+            // Force idle values
+            mAnim.SetFloat(JoystickX, 0f);
+            mAnim.SetFloat(JoystickY, 0f);
+            mAnim.SetFloat(RunMultiplier, 1.0f);
+        }
+
         private void SetLocomotionState(float joystickX, float joystickY)
         {
             if (mAnim == null)
             {
                 Debug.LogError($"PlayerAnimation {gameObject.name}: Animator is null!");
                 return;
+            }
+            
+            // If resetting, force zero values
+            if (IsResetting)
+            {
+                joystickX = 0f;
+                joystickY = 0f;
             }
             
             // Debug for NPCs

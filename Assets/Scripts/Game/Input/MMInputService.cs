@@ -41,6 +41,9 @@ namespace Game.Input
         public bool ButtonDPressed { get; private set; }
         public bool ButtonEPressed { get; private set; }
 
+        // Add healing check
+        private PlayerHealthSystem mHealthSystem;
+
         private void Initialize(CharacterTypeSO characterType)
         {
             typeData = characterType;
@@ -54,6 +57,8 @@ namespace Game.Input
         private void Start()
         {
             if (!HasInputAuthority) return;
+
+            mHealthSystem = GetComponent<PlayerHealthSystem>();
 
             var ui = FindFirstObjectByType<Game2DUI>();
             Initialize(typeData);
@@ -92,7 +97,14 @@ namespace Game.Input
 
         private void Update()
         {
-            if (!HasInputAuthority) return;
+            if (!HasInputAuthority || !enabled) return;
+
+            // Check if player is healing or falling - if so, clear all input
+            if (mHealthSystem != null && (mHealthSystem.IsHealing || mHealthSystem.IsFalling))
+            {
+                ClearAllInput();
+                return;
+            }
 
             Movement = joystick != null && joystick.Magnitude > 0.1f ? joystick.RawValue : new Vector2(UnityEngine.Input.GetAxis("Horizontal"), UnityEngine.Input.GetAxis("Vertical"));
             Sprint = Movement.magnitude > 0.8f;
@@ -139,7 +151,6 @@ namespace Game.Input
             if (ButtonDPressed) mCooldownTimerD = mCooldownDurationD;
             if (ButtonEPressed) mCooldownTimerE = mCooldownDurationE;
 
-           // Game2DUI.SetCooldownMask(Game2DUI.Instance.buttonA,Game2DUI.Instance.buttonAMask, Game2DUI.Instance.cooldownTimerTextA, mCooldownTimerA, mCooldownDurationA);
             Game2DUI.SetCooldownMask(Game2DUI.Instance.buttonB,Game2DUI.Instance.buttonBMask, Game2DUI.Instance.cooldownTimerTextB, mCooldownTimerB, mCooldownDurationB);
             Game2DUI.SetCooldownMask(Game2DUI.Instance.buttonC,Game2DUI.Instance.buttonCMask, Game2DUI.Instance.cooldownTimerTextC, mCooldownTimerC, mCooldownDurationC);
             Game2DUI.SetCooldownMask(Game2DUI.Instance.buttonD,Game2DUI.Instance.buttonDMask, Game2DUI.Instance.cooldownTimerTextD, mCooldownTimerD, mCooldownDurationD);
@@ -147,19 +158,44 @@ namespace Game.Input
 
             mUIButtonAWasHeld = mUIButtonAHeld;
         }
+
+        private void ClearAllInput()
+        {
+            Movement = Vector2.zero;
+            Sprint = false;
+            ButtonAReleased = false;
+            ButtonAPressed = false;
+            ButtonAHeld = false;
+            ButtonBPressed = false;
+            ButtonCPressed = false;
+            ButtonDPressed = false;
+            ButtonEPressed = false;
+
+            // Clear all timers
+            mBufferTimerA = mBufferTimerB = mBufferTimerC = mBufferTimerD = mBufferTimerE = 0f;
+            mBufferTimerARelease = 0f;
+        }
         
         public override void FixedUpdateNetwork()
         {
             if (!HasInputAuthority && Runner.TryGetInputForPlayer(Object.InputAuthority, out NetworkInputData input))
             {
-                Movement = input.Movement;
-                Sprint = input.Buttons.IsSet(InputButtons.Sprint);
-                ButtonAPressed = input.Buttons.IsSet(InputButtons.ButtonA);
-                ButtonAHeld = input.ButtonAHeld;
-                ButtonBPressed = input.Buttons.IsSet(InputButtons.ButtonB);
-                ButtonCPressed = input.Buttons.IsSet(InputButtons.ButtonC);
-                ButtonDPressed = input.Buttons.IsSet(InputButtons.ButtonD);
-                ButtonEPressed = input.Buttons.IsSet(InputButtons.ButtonE);
+                // Only update input if not healing/falling
+                if (mHealthSystem == null || (!mHealthSystem.IsHealing && !mHealthSystem.IsFalling))
+                {
+                    Movement = input.Movement;
+                    Sprint = input.Buttons.IsSet(InputButtons.Sprint);
+                    ButtonAPressed = input.Buttons.IsSet(InputButtons.ButtonA);
+                    ButtonAHeld = input.ButtonAHeld;
+                    ButtonBPressed = input.Buttons.IsSet(InputButtons.ButtonB);
+                    ButtonCPressed = input.Buttons.IsSet(InputButtons.ButtonC);
+                    ButtonDPressed = input.Buttons.IsSet(InputButtons.ButtonD);
+                    ButtonEPressed = input.Buttons.IsSet(InputButtons.ButtonE);
+                }
+                else
+                {
+                    ClearAllInput();
+                }
             }
         }
 

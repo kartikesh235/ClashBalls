@@ -51,8 +51,6 @@ namespace Game.Abilities
             StartTackle();
         }
 
-        #region Tackle Logic
-
         private bool CanStartTackle()
         {
             return HasStateAuthority && Input.ButtonDPressed && mCooldownTimer <= 0f && !mIsTackling;
@@ -109,10 +107,6 @@ namespace Game.Abilities
             GetComponent<PlayerAnimation>().SetState(PlayerAnimState.Tackle);
         }
 
-        #endregion
-
-        #region VFX & Animation
-
         private void PlayTackleEffects()
         {
             if (vfxTackle != null)
@@ -127,10 +121,6 @@ namespace Game.Abilities
             }));
         }
 
-        #endregion
-
-        #region Hit Detection
-
         private void HandleTackleHitDetection()
         {
             var direction = mTackleDirection;
@@ -144,7 +134,6 @@ namespace Game.Abilities
                 var target = results[i].GetComponentInParent<NetworkObject>();
                 if (target == null || target == Object) continue;
 
-                // Only StateAuthority should handle tackle hits
                 if (HasStateAuthority)
                 {
                     RPC_ApplyTackleHit(target.Id, direction, TypeData.tackleForce);
@@ -169,19 +158,18 @@ namespace Game.Abilities
                 return;
             }
 
-            // Apply force through NetworkRigidbody if available, otherwise regular Rigidbody
-            ApplyNetworkedForce(targetObj, direction, force);
+            // Apply consistent force regardless of network authority
+            ApplyConsistentForce(targetObj, direction, force);
 
-            // Apply stun
-            var stunSystem = target.GetComponent<StunSystem>();
-            if (stunSystem != null)
-            {
-                stunSystem.ApplyStun(TypeData.tackleStunDuration);
-            }
-
-            // Apply damage (only on StateAuthority to avoid double damage)
+            // Apply stun only on StateAuthority to avoid duplication
             if (HasStateAuthority)
             {
+                var stunSystem = target.GetComponent<StunSystem>();
+                if (stunSystem != null)
+                {
+                    stunSystem.ApplyStun(TypeData.tackleStunDuration);
+                }
+
                 var healthSystem = target.GetComponent<PlayerHealthSystem>();
                 if (healthSystem != null && healthSystem.CanTakeDamage())
                 {
@@ -191,40 +179,36 @@ namespace Game.Abilities
             }
         }
 
-        private void ApplyNetworkedForce(NetworkObject target, Vector3 direction, float force)
+        private void ApplyConsistentForce(NetworkObject target, Vector3 direction, float force)
         {
-            // Try NetworkRigidbody3D first (Fusion networking)
+            // Always use the same force application method regardless of player type
             var networkRb = target.GetComponent<NetworkRigidbody3D>();
             if (networkRb != null && networkRb.Rigidbody != null)
             {
-                // Use consistent force application regardless of network authority
-                networkRb.Rigidbody.AddForce(direction * force, ForceMode.VelocityChange);
-                Debug.Log($"Applied networked force {force} to {target.name} via NetworkRigidbody3D");
+                // Force consistency: Use VelocityChange for immediate effect
+                Vector3 forceVector = direction.normalized * force;
+                networkRb.Rigidbody.AddForce(forceVector, ForceMode.VelocityChange);
+                
+                Debug.Log($"Applied consistent tackle force {force} to {target.name} (NetworkRB)");
                 return;
             }
 
-            // Fallback to regular Rigidbody
+            // Fallback to regular Rigidbody with same force mode
             var rb = target.GetComponent<Rigidbody>();
             if (rb != null)
             {
-                rb.AddForce(direction * force, ForceMode.VelocityChange);
-                Debug.Log($"Applied force {force} to {target.name} via regular Rigidbody");
+                Vector3 forceVector = direction.normalized * force;
+                rb.AddForce(forceVector, ForceMode.VelocityChange);
+                
+                Debug.Log($"Applied consistent tackle force {force} to {target.name} (Regular RB)");
             }
         }
-
-        #endregion
-
-        #region Cooldown
 
         private void UpdateCooldown()
         {
             if (mCooldownTimer > 0f)
                 mCooldownTimer -= Runner.DeltaTime;
         }
-
-        #endregion
-
-        #region Legacy Support
 
         public void RunnerInvokeEnable(PlayerMovement targetMovement, float delay)
         {
@@ -237,7 +221,5 @@ namespace Game.Abilities
             if (mCachedTarget != null)
                 mCachedTarget.enabled = true;
         }
-
-        #endregion
     }
 }

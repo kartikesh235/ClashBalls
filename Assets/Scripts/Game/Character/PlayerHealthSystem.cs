@@ -6,6 +6,8 @@ using Game.Abilities;
 using Game.Controllers;
 using Game.AI;
 using Game.Input;
+using Game.Ball;
+using Game.AnimationControl;
 using Fusion;
 using Fusion.Addons.Physics;
 
@@ -18,6 +20,10 @@ namespace Game.Character
         public float healingDuration = 5f;
         public float respawnParryDuration = 2f;
         
+        [Header("Fall Detection")]
+        public float fallThreshold = -2f;
+        public float fallCheckInterval = 0.5f;
+        
         [Header("Healing Position")]
         public Transform healingPosition;
         
@@ -27,6 +33,10 @@ namespace Game.Character
         [Networked] public float CurrentHealth { get; private set; }
         [Networked] public bool IsHealing { get; private set; }
         [Networked] public bool HasRespawnParry { get; private set; }
+        [Networked] public bool IsFalling { get; private set; }
+        [Networked] private Vector3 PendingTeleportPosition { get; set; }
+        [Networked] private NetworkBool HasPendingTeleport { get; set; }
+        [Networked] private NetworkBool ForceResetAnimation { get; set; }
         
         public float HealthRatio => CurrentHealth / maxHealth;
         
@@ -37,13 +47,17 @@ namespace Game.Character
         private PlayerController mPlayerController;
         private NetworkedNPCControllerNew mNPCController;
         private MmInputService mHumanInputService;
+        private PlayerAnimation mPlayerAnimation;
         private BehaviorDesigner.Runtime.BehaviorTree mBehaviorTree;
         private NetworkRigidbody3D mNetworkRigidbody;
+        private StunSystem mStunSystem;
         private Vector3 mOriginalPosition;
         private Coroutine mHealingCoroutine;
         private Coroutine mRespawnParryCoroutine;
+        private Coroutine mFallCheckCoroutine;
         private bool mWasNPCDumbBeforeHealing;
         private Transform[] mCachedSpawnPoints;
+        private Transform[] mCachedBallSpawnPoints;
         
         public delegate void PlayerDefeatedDelegate(PlayerController attacker, PlayerController victim);
         public static event PlayerDefeatedDelegate OnPlayerDefeated;
@@ -58,16 +72,153 @@ namespace Game.Character
             mPlayerController = GetComponent<PlayerController>();
             mNPCController = GetComponent<NetworkedNPCControllerNew>();
             mHumanInputService = GetComponent<MmInputService>();
+            mPlayerAnimation = GetComponent<PlayerAnimation>();
             mBehaviorTree = GetComponent<BehaviorDesigner.Runtime.BehaviorTree>();
             mNetworkRigidbody = GetComponent<NetworkRigidbody3D>();
+            mStunSystem = GetComponent<StunSystem>();
             
             InitializeSpawnSystem();
+            
+            // Start fall detection
+            if (HasStateAuthority)
+            {
+                mFallCheckCoroutine = StartCoroutine(FallDetectionCoroutine());
+            }
+        }
+
+        public override void FixedUpdateNetwork()
+        {
+            if (HasStateAuthority)
+            {
+                if (HasPendingTeleport)
+                {
+                    PerformTeleport(PendingTeleportPosition);
+                    HasPendingTeleport = false;
+                }
+                
+                if (ForceResetAnimation)
+                {
+                    ForceAnimationReset();
+                    ForceResetAnimation = false;
+                }
+            }
+        }
+
+        private void PerformTeleport(Vector3 targetPosition)
+        {
+            // Clear all physics state before teleport
+            ClearAllPhysicsState();
+            
+            if (mNetworkRigidbody != null)
+            {
+                mNetworkRigidbody.Teleport(targetPosition, transform.rotation);
+            }
+            else
+            {
+                transform.position = targetPosition;
+            }
+        }
+
+        private void ClearAllPhysicsState()
+        {
+            if (!HasStateAuthority) return;
+            
+            // Temporarily set kinematic to clear forces
+            if (mNetworkRigidbody != null && mNetworkRigidbody.Rigidbody != null)
+            {
+                var rb = mNetworkRigidbody.Rigidbody;
+                bool wasKinematic = rb.isKinematic;
+                
+                rb.isKinematic = true;
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.ResetInertiaTensor();
+                rb.isKinematic = wasKinematic;
+                
+                // Clear interpolation data
+                mNetworkRigidbody.Rigidbody.position = transform.position;
+                mNetworkRigidbody.Rigidbody.rotation = transform.rotation;
+            }
+        }
+
+        private void ForceAnimationReset()
+        {
+            if (mPlayerAnimation != null)
+            {
+                // Force idle state
+                mPlayerAnimation.SetState(PlayerAnimState.Locomotion);
+                
+                // Clear all animation parameters
+                var animator = GetComponentInChildren<Animator>();
+                if (animator != null)
+                {
+                    animator.SetFloat("JoystickX", 0);
+                    animator.SetFloat("JoystickY", 0);
+                    animator.SetFloat("RunMultiplier", 0);
+                    animator.SetInteger("State", 0);
+                    animator.SetInteger("HandState", 0);
+                    
+                    // Force update animator
+                    animator.Update(0);
+                }
+            }
+        }
+
+        private IEnumerator FallDetectionCoroutine()
+        {
+            while (true)
+            {
+                yield return new WaitForSeconds(fallCheckInterval);
+                
+                if (!IsHealing && !IsFalling && transform.position.y < fallThreshold)
+                {
+                    Debug.Log($"{gameObject.name} is falling below threshold. Triggering respawn.");
+                    IsFalling = true;
+                    RPC_StartFallRespawn();
+                }
+            }
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        private void RPC_StartFallRespawn()
+        {
+            StartFallRespawn();
+        }
+
+        private void StartFallRespawn()
+        {
+            ThrowHeldBall();
+            ResetCharacterCompletely();
+            
+            if (HasStateAuthority)
+            {
+                StartCoroutine(FallRespawnProcess());
+            }
+        }
+
+        private IEnumerator FallRespawnProcess()
+        {
+            yield return new WaitForFixedUpdate();
+            
+            bool respawnSuccess = SetRespawnPositionNetworked();
+            
+            if (!respawnSuccess)
+            {
+                RespawnAtFallbackPosition();
+            }
+            
+            yield return new WaitForSeconds(0.2f);
+            
+            IsFalling = false;
+            EnablePlayerControl();
+            StartRespawnParry();
         }
 
         private void InitializeSpawnSystem()
         {
             // Cache spawn points on spawn
             StartCoroutine(CacheSpawnPointsWithRetry());
+            StartCoroutine(CacheBallSpawnPointsWithRetry());
             
             // Find healing position
             if (healingPosition == null)
@@ -110,9 +261,41 @@ namespace Game.Character
             }
         }
 
+        private IEnumerator CacheBallSpawnPointsWithRetry()
+        {
+            int retryCount = 0;
+            const int maxRetries = 10;
+            
+            while (mCachedBallSpawnPoints == null || mCachedBallSpawnPoints.Length == 0)
+            {
+                var ballSpawnPointObjects = GameObject.FindGameObjectsWithTag("BallSpawnPoint");
+                
+                if (ballSpawnPointObjects.Length > 0)
+                {
+                    mCachedBallSpawnPoints = new Transform[ballSpawnPointObjects.Length];
+                    for (int i = 0; i < ballSpawnPointObjects.Length; i++)
+                    {
+                        mCachedBallSpawnPoints[i] = ballSpawnPointObjects[i].transform;
+                    }
+                    
+                    Debug.Log($"Cached {mCachedBallSpawnPoints.Length} ball spawn points");
+                    break;
+                }
+                
+                retryCount++;
+                if (retryCount >= maxRetries)
+                {
+                    Debug.LogWarning($"Failed to find ball spawn points after {maxRetries} retries.");
+                    break;
+                }
+                
+                yield return new WaitForSeconds(0.5f);
+            }
+        }
+
         public void TakeDamage(float damage, PlayerController attacker = null)
         {
-            if (!HasStateAuthority || IsHealing || HasRespawnParry) return;
+            if (!HasStateAuthority || IsHealing || HasRespawnParry || IsFalling) return;
             
             CurrentHealth -= damage;
             CurrentHealth = Mathf.Max(0, CurrentHealth);
@@ -153,13 +336,155 @@ namespace Game.Character
                 OnPlayerDefeated?.Invoke(attacker, mPlayerController);
             }
             
-            DisablePlayerControl();
+            ThrowHeldBall();
+            ResetCharacterCompletely();
             
             // Only StateAuthority should handle position and healing logic
             if (HasStateAuthority)
             {
+                // Clear any ongoing stun
+                if (mStunSystem != null && mStunSystem.IsStunned)
+                {
+                    mStunSystem.ForceEndStun();
+                }
+                
+                // Schedule animation reset
+                ForceResetAnimation = true;
+                
                 TeleportToHealingZone();
                 mHealingCoroutine = StartCoroutine(HealingProcess());
+            }
+        }
+
+        private void ThrowHeldBall()
+        {
+            var pickupAbility = GetComponent<PickUpAbility>();
+            if (pickupAbility != null && pickupAbility.HasBall)
+            {
+                // Find held ball and drop it
+                var ballTransform = mPlayerController.ballTransformHolder;
+                if (ballTransform != null && ballTransform.childCount > 0)
+                {
+                    var ballObject = ballTransform.GetChild(0);
+                    var ballController = ballObject.GetComponent<BallController>();
+                    
+                    if (ballController != null && HasStateAuthority)
+                    {
+                        // Calculate throw direction (away from player)
+                        Vector3 throwDirection = transform.forward + Vector3.up * 0.3f;
+                        throwDirection.Normalize();
+                        
+                        // Force throw the ball
+                        ballController.Throw(throwDirection, 10f, gameObject);
+                        
+                        // Schedule ball respawn after a delay
+                        StartCoroutine(RespawnBallAfterDelay(ballController, 2f));
+                        
+                        Debug.Log($"Force threw ball from {gameObject.name}");
+                    }
+                }
+                
+                // Reset pickup ability
+                var hasballProperty = pickupAbility.GetType().GetProperty("HasBall");
+                hasballProperty?.SetValue(pickupAbility, false);
+                
+                // Reset throw ability
+                var throwAbility = GetComponent<ThrowAbility>();
+                if (throwAbility != null)
+                {
+                    throwAbility.SetHeldBall(null);
+                }
+            }
+        }
+
+        private IEnumerator RespawnBallAfterDelay(BallController ball, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            
+            if (ball != null && mCachedBallSpawnPoints != null && mCachedBallSpawnPoints.Length > 0)
+            {
+                var randomBallSpawn = mCachedBallSpawnPoints[Random.Range(0, mCachedBallSpawnPoints.Length)];
+                if (randomBallSpawn != null)
+                {
+                    RPC_RespawnBall(ball.Object.Id, randomBallSpawn.position);
+                }
+            }
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        private void RPC_RespawnBall(NetworkId ballId, Vector3 spawnPosition)
+        {
+            var ballObj = Runner.FindObject(ballId);
+            if (ballObj != null)
+            {
+                var ballController = ballObj.GetComponent<BallController>();
+                if (ballController != null)
+                {
+                    // Reset ball to spawn position
+                    ballController.transform.position = spawnPosition;
+                    ballController.transform.rotation = Quaternion.identity;
+                    
+                    var rb = ballController.GetComponent<Rigidbody>();
+                    if (rb != null)
+                    {
+                        rb.linearVelocity = Vector3.zero;
+                        rb.angularVelocity = Vector3.zero;
+                    }
+                    
+                    // Reset ball state
+                    var hasHitGroundField = typeof(BallController).GetField("hasHitGround", 
+                        System.Reflection.BindingFlags.Public | 
+                        System.Reflection.BindingFlags.Instance);
+                    hasHitGroundField?.SetValue(ballController, false);
+                    
+                    Debug.Log($"Respawned ball at {spawnPosition}");
+                }
+            }
+        }
+
+        private void ResetCharacterCompletely()
+        {
+            // Reset rigidbody
+            if (HasStateAuthority)
+            {
+                ClearAllPhysicsState();
+            }
+            
+            // Reset animation to idle
+            if (mPlayerAnimation != null)
+            {
+                mPlayerAnimation.SetState(PlayerAnimState.Locomotion);
+                mPlayerAnimation.SetStunned(false);
+            }
+            
+            // Disable all control
+            DisablePlayerControl();
+            
+            // Reset abilities
+            ResetAllAbilities();
+            
+            // Reset stamina
+            if (mStats != null && HasStateAuthority)
+            {
+                mStats.RecoverStamina(mStats.MaxStamina);
+            }
+        }
+
+        private void ResetAllAbilities()
+        {
+            var abilities = GetComponents<BaseAbility>();
+            foreach (var ability in abilities)
+            {
+                ability.enabled = false;
+                
+                // Reset specific ability states
+                if (ability is ThrowAbility throwAbility)
+                {
+                    var heldBallField = typeof(ThrowAbility).GetField("mHeldBall", 
+                        System.Reflection.BindingFlags.NonPublic | 
+                        System.Reflection.BindingFlags.Instance);
+                    heldBallField?.SetValue(throwAbility, null);
+                }
             }
         }
 
@@ -169,7 +494,7 @@ namespace Game.Character
             if (mNPCController != null)
             {
                 mWasNPCDumbBeforeHealing = mNPCController.IsDumbNPC;
-                mNPCController.IsDumbNPC = true; // Make NPC dumb to stop all AI
+                mNPCController.IsDumbNPC = true;
             }
             
             // Disable movement
@@ -182,19 +507,10 @@ namespace Game.Character
                 mHumanInputService.enabled = false;
             }
             
-            // Disable abilities
-            DisableAllAbilities();
-            
             // Disable UI buttons for local player
             if (Object.HasInputAuthority && !mPlayerController.IsNPC())
             {
                 RPC_DisableUIButtons();
-            }
-            
-            // Clear rigidbody velocity on state authority
-            if (HasStateAuthority)
-            {
-                ClearRigidbodyVelocity();
             }
         }
 
@@ -210,7 +526,7 @@ namespace Game.Character
                 mHumanInputService.enabled = true;
             }
             
-            // Restore NPC state and re-enable AI
+            // Restore NPC state
             if (mNPCController != null)
             {
                 mNPCController.IsDumbNPC = mWasNPCDumbBeforeHealing;
@@ -234,9 +550,7 @@ namespace Game.Character
 
         private IEnumerator RestartNPCBehaviorTree()
         {
-            // Wait a frame to ensure position is properly set
-            yield return new WaitForFixedUpdate();
-            yield return new WaitForFixedUpdate();
+            yield return new WaitForSeconds(0.2f);
             
             if (mBehaviorTree != null)
             {
@@ -253,45 +567,10 @@ namespace Game.Character
         {
             if (healingPosition != null && HasStateAuthority)
             {
-                Vector3 targetPos = healingPosition.position;
-                Quaternion targetRot = healingPosition.rotation;
+                PendingTeleportPosition = healingPosition.position;
+                HasPendingTeleport = true;
                 
-                // Immediate position set for StateAuthority
-                transform.position = targetPos;
-                transform.rotation = targetRot;
-                ClearRigidbodyVelocity();
-                
-                // RPC to sync position to all clients
-                RPC_SyncPosition(targetPos, targetRot);
-                
-                Debug.Log($"Teleported {gameObject.name} to healing zone: {targetPos}");
-            }
-        }
-
-        [Rpc(RpcSources.StateAuthority, RpcTargets.Proxies)]
-        private void RPC_SyncPosition(Vector3 position, Quaternion rotation)
-        {
-            transform.position = position;
-            transform.rotation = rotation;
-        }
-
-        private void ClearRigidbodyVelocity()
-        {
-            if (!HasStateAuthority) return;
-            
-            // Clear NetworkRigidbody3D if available
-            if (mNetworkRigidbody != null && mNetworkRigidbody.Rigidbody != null)
-            {
-                mNetworkRigidbody.Rigidbody.linearVelocity = Vector3.zero;
-                mNetworkRigidbody.Rigidbody.angularVelocity = Vector3.zero;
-            }
-            
-            // Fallback to regular Rigidbody
-            var rb = GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                rb.linearVelocity = Vector3.zero;
-                rb.angularVelocity = Vector3.zero;
+                Debug.Log($"Scheduled teleport for {gameObject.name} to healing zone: {healingPosition.position}");
             }
         }
 
@@ -331,18 +610,21 @@ namespace Game.Character
             if (mUI3D != null)
                 mUI3D.ShowHealingEffects(true);
             
-            // Continuously clear velocity during healing to prevent drift
+            // Force reset animation periodically during healing
+            float animResetInterval = 0.5f;
+            float animResetTimer = 0f;
+            
             while (healTime > 0)
             {
-                // Clear velocity every few frames to prevent any movement
-                if (Runner.Tick % 10 == 0)
-                {
-                    ClearRigidbodyVelocity();
-                }
-                
-                // Update countdown
                 if (mUI3D != null)
                     mUI3D.ShowHealCountdown(healTime);
+                
+                animResetTimer += Time.deltaTime;
+                if (animResetTimer >= animResetInterval)
+                {
+                    ForceResetAnimation = true;
+                    animResetTimer = 0f;
+                }
                 
                 healTime -= Time.deltaTime;
                 yield return null;
@@ -357,10 +639,10 @@ namespace Game.Character
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
         private void RPC_CompleteHealing()
         {
-            StartCoroutine(CompleteHealingDelayed());
+            StartCoroutine(CompleteHealingProcess());
         }
 
-        private IEnumerator CompleteHealingDelayed()
+        private IEnumerator CompleteHealingProcess()
         {
             IsHealing = false;
             CurrentHealth = maxHealth;
@@ -379,7 +661,7 @@ namespace Game.Character
             // Respawn at spawn point (only on StateAuthority)
             if (HasStateAuthority)
             {
-                bool respawnSuccess = RespawnAtSpawnPoint();
+                bool respawnSuccess = SetRespawnPositionNetworked();
                 
                 if (!respawnSuccess)
                 {
@@ -388,18 +670,19 @@ namespace Game.Character
                 }
             }
             
-            // Wait another frame before enabling control
-            yield return new WaitForFixedUpdate();
+            yield return new WaitForSeconds(0.2f);
             
             EnablePlayerControl();
             StartRespawnParry();
         }
 
-        private bool RespawnAtSpawnPoint()
+        private bool SetRespawnPositionNetworked()
         {
             if (!HasStateAuthority) return false;
             
-            // Try cached spawn points first
+            Vector3? targetPosition = null;
+            Quaternion targetRotation = Quaternion.identity;
+            
             if (mCachedSpawnPoints != null && mCachedSpawnPoints.Length > 0)
             {
                 var validSpawnPoints = new System.Collections.Generic.List<Transform>();
@@ -414,21 +697,28 @@ namespace Game.Character
                 if (validSpawnPoints.Count > 0)
                 {
                     var randomSpawn = validSpawnPoints[Random.Range(0, validSpawnPoints.Count)];
-                    SetRespawnPosition(randomSpawn.position, randomSpawn.rotation);
-                    
-                    Debug.Log($"Respawned {gameObject.name} at cached spawn point: {randomSpawn.position}");
-                    return true;
+                    targetPosition = randomSpawn.position;
+                    targetRotation = randomSpawn.rotation;
                 }
             }
             
-            // Fallback: Search for spawn points again
-            var spawnPointObjects = GameObject.FindGameObjectsWithTag("SpawnPoint");
-            if (spawnPointObjects.Length > 0)
+            if (!targetPosition.HasValue)
             {
-                var randomSpawn = spawnPointObjects[Random.Range(0, spawnPointObjects.Length)];
-                SetRespawnPosition(randomSpawn.transform.position, randomSpawn.transform.rotation);
+                var spawnPointObjects = GameObject.FindGameObjectsWithTag("SpawnPoint");
+                if (spawnPointObjects.Length > 0)
+                {
+                    var randomSpawn = spawnPointObjects[Random.Range(0, spawnPointObjects.Length)];
+                    targetPosition = randomSpawn.transform.position;
+                    targetRotation = randomSpawn.transform.rotation;
+                }
+            }
+            
+            if (targetPosition.HasValue)
+            {
+                PendingTeleportPosition = targetPosition.Value;
+                HasPendingTeleport = true;
                 
-                Debug.Log($"Respawned {gameObject.name} at fresh spawn point: {randomSpawn.transform.position}");
+                Debug.Log($"Scheduled respawn for {gameObject.name} at: {targetPosition.Value}");
                 return true;
             }
             
@@ -446,45 +736,10 @@ namespace Game.Character
                 Random.Range(-2f, 2f)
             );
             
-            SetRespawnPosition(fallbackPos, Quaternion.identity);
-            Debug.LogWarning($"Used fallback respawn for {gameObject.name} at: {fallbackPos}");
-        }
-
-        private void SetRespawnPosition(Vector3 position, Quaternion rotation)
-        {
-            // Immediate position set for StateAuthority
-            transform.position = position;
-            transform.rotation = rotation;
-            ClearRigidbodyVelocity();
+            PendingTeleportPosition = fallbackPos;
+            HasPendingTeleport = true;
             
-            // RPC to sync position to all clients
-            RPC_SyncPosition(position, rotation);
-            
-            // Validate position was set
-            StartCoroutine(ValidateRespawnPosition(position));
-        }
-
-        private IEnumerator ValidateRespawnPosition(Vector3 expectedPosition)
-        {
-            yield return new WaitForFixedUpdate();
-            
-            float distance = Vector3.Distance(transform.position, expectedPosition);
-            if (distance > 1f)
-            {
-                Debug.LogWarning($"Respawn position validation failed for {gameObject.name}. Expected: {expectedPosition}, Actual: {transform.position}, Distance: {distance}");
-                
-                // Try to correct position one more time
-                if (HasStateAuthority)
-                {
-                    transform.position = expectedPosition;
-                    ClearRigidbodyVelocity();
-                    RPC_SyncPosition(expectedPosition, transform.rotation);
-                }
-            }
-            else
-            {
-                Debug.Log($"Respawn position validated for {gameObject.name} at: {transform.position}");
-            }
+            Debug.LogWarning($"Scheduled fallback respawn for {gameObject.name} at: {fallbackPos}");
         }
 
         private void StartRespawnParry()
@@ -502,15 +757,6 @@ namespace Game.Character
             HasRespawnParry = false;
         }
 
-        private void DisableAllAbilities()
-        {
-            var abilities = GetComponents<BaseAbility>();
-            foreach (var ability in abilities)
-            {
-                ability.enabled = false;
-            }
-        }
-
         private void EnableAllAbilities()
         {
             var abilities = GetComponents<BaseAbility>();
@@ -522,7 +768,7 @@ namespace Game.Character
 
         public bool CanTakeDamage()
         {
-            return !IsHealing && !HasRespawnParry;
+            return !IsHealing && !HasRespawnParry && !IsFalling;
         }
 
         private void UpdateHealthUI()
@@ -534,6 +780,14 @@ namespace Game.Character
                 {
                     Game2DUI.Instance.UpdateLocalPlayerHealth(CurrentHealth, maxHealth);
                 }
+            }
+        }
+
+        public override void Despawned(NetworkRunner runner, bool hasState)
+        {
+            if (mFallCheckCoroutine != null)
+            {
+                StopCoroutine(mFallCheckCoroutine);
             }
         }
     }

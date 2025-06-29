@@ -122,5 +122,12 @@ namespace Game.Character
                 RPC_ApplyStun(duration);
             }
         }
+        public void ForceEndStun()
+        {
+            if (HasStateAuthority)
+            {
+                EndStun();
+            }
+        }
     }
 }
