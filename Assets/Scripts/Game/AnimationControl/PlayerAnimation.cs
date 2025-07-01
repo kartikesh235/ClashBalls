@@ -100,6 +100,7 @@ namespace Game.AnimationControl
                         mAnim.SetFloat(RunMultiplier, 1.0f);
                     }
                     SetLocomotionState(mInput.Movement.x, mInput.Movement.y);
+                    Debug.LogError("mInput.Movement.x" +mInput.Movement.x + "mInput.Movement.x " + mInput.Movement.y + " " + mInput.Sprint);
                 }
                 else if (mInput == null)
                 {
@@ -133,11 +134,14 @@ namespace Game.AnimationControl
             if (stunned)
             {
                 NetworkedAnimState = PlayerAnimState.Stunned;
+                mAnim.SetFloat(JoystickX, 0);
+                mAnim.SetFloat(JoystickY, 0);
             }
             else
             {
                 NetworkedAnimState = PlayerAnimState.Locomotion;
             }
+            
         }
 
         public void ResetToIdleState()
@@ -147,8 +151,10 @@ namespace Game.AnimationControl
             IsResetting = true;
             NetworkedAnimState = PlayerAnimState.Locomotion;
             IsStunnedState = false;
+            mAnim.SetFloat(JoystickX, 0);
+            mAnim.SetFloat(JoystickY, 0);
             
-            StartCoroutine(ExtraUtils.SetDelay(0.1f, () =>
+            StartCoroutine(ExtraUtils.SetDelay(1f, () =>
             {
                 IsResetting = false;
             }));

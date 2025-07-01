@@ -89,9 +89,6 @@ namespace Game.Abilities
             Vector3 origin = transform.position + direction * 0.1f;
             var physicsScene = Runner.GetPhysicsScene();
 
-            if (physicsScene.Raycast(origin, direction, out var hit, mTravelDistance, mWallMask))
-                return hit.distance;
-
             return mTravelDistance;
         }
 

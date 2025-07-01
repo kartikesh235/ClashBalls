@@ -40,12 +40,14 @@ namespace Game.Ball
 
             IsHeld = true;
             _carrier = carrier;
+            typeData = carrier.GetComponent<PlayerController>().GetCharacterTypeSO();
 
             _rb.Rigidbody.isKinematic = true;
             _collider.enabled = false;
             if (mTrail != null) mTrail.enabled = false;
             
-            transform.SetParent(carrier.GetComponent<PlayerController>().ballTransformHolder);
+            carrier.GetComponent<PlayerController>().ball = this;
+            //transform.SetParent(carrier.GetComponent<PlayerController>().ballTransformHolder);
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;
             if (carrier.TryGetComponent(out ThrowAbility throwAbility))

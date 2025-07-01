@@ -102,7 +102,7 @@ namespace Game.AI
             }
         }
 
-        private void ClearAllInputs()
+        public void ClearAllInputs()
         {
             NetworkedMovement = Vector2.zero;
             NetworkedSprint = false;
@@ -113,7 +113,7 @@ namespace Game.AI
             NetworkedButtonEPressed = false;
             NetworkedButtonAHeld = false;
             NetworkedButtonAReleased = false;
-            
+    
             for (int i = 0; i < localButtonStates.Length; i++)
             {
                 localButtonStates[i] = false;
@@ -121,6 +121,7 @@ namespace Game.AI
             localButtonAHeld = false;
             localButtonAReleased = false;
         }
+
 
         private void SetNPCLayer()
         {

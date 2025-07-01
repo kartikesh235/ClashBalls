@@ -19,6 +19,7 @@ namespace Game.Character
         public float maxHealth = 100f;
         public float healingDuration = 5f;
         public float respawnParryDuration = 2f;
+        public float deathStunDuration = 1.5f; // Time to play death animation before healing
         
         [Header("Fall Detection")]
         public float fallThreshold = -2f;
@@ -34,9 +35,11 @@ namespace Game.Character
         [Networked] public bool IsHealing { get; private set; }
         [Networked] public bool HasRespawnParry { get; private set; }
         [Networked] public bool IsFalling { get; private set; }
+        [Networked] public bool IsDeathStunned { get; private set; }
         [Networked] private Vector3 PendingTeleportPosition { get; set; }
         [Networked] private NetworkBool HasPendingTeleport { get; set; }
         [Networked] private NetworkBool ForceResetAnimation { get; set; }
+        [Networked] private NetworkBool ForceResetInput { get; set; }
         
         public float HealthRatio => CurrentHealth / maxHealth;
         
@@ -55,6 +58,7 @@ namespace Game.Character
         private Coroutine mHealingCoroutine;
         private Coroutine mRespawnParryCoroutine;
         private Coroutine mFallCheckCoroutine;
+        private Coroutine mDeathStunCoroutine;
         private bool mWasNPCDumbBeforeHealing;
         private Transform[] mCachedSpawnPoints;
         private Transform[] mCachedBallSpawnPoints;
@@ -96,11 +100,43 @@ namespace Game.Character
                     HasPendingTeleport = false;
                 }
                 
+                if (ForceResetInput)
+                {
+                    ForceInputReset();
+                    ForceResetInput = false;
+                }
+                
                 if (ForceResetAnimation)
                 {
                     ForceAnimationReset();
                     ForceResetAnimation = false;
                 }
+                
+               
+            }
+        }
+
+        private void ForceInputReset()
+        {
+            // Reset joystick for human players
+            if (mHumanInputService != null && Object.HasInputAuthority)
+            {
+                if (Game2DUI.Instance != null && Game2DUI.Instance.joystick != null)
+                {
+                    // Force reset joystick position
+                    Game2DUI.Instance.joystick.SetNeutralPosition();
+                    Game2DUI.Instance.joystick.transform.localPosition = Vector3.zero;
+                }
+                
+                // Clear all input buffers
+                mHumanInputService.ResetPressedInputs();
+                mHumanInputService.ResetMovement();
+            }
+            
+            // Clear NPC input
+            if (mNPCController != null)
+            {
+                mNPCController.ClearAllInputs();
             }
         }
 
@@ -145,22 +181,7 @@ namespace Game.Character
         {
             if (mPlayerAnimation != null)
             {
-                // Force idle state
-                mPlayerAnimation.SetState(PlayerAnimState.Locomotion);
-                
-                // Clear all animation parameters
-                var animator = GetComponentInChildren<Animator>();
-                if (animator != null)
-                {
-                    animator.SetFloat("JoystickX", 0);
-                    animator.SetFloat("JoystickY", 0);
-                    animator.SetFloat("RunMultiplier", 0);
-                    animator.SetInteger("State", 0);
-                    animator.SetInteger("HandState", 0);
-                    
-                    // Force update animator
-                    animator.Update(0);
-                }
+                mPlayerAnimation.ResetToIdleState();
             }
         }
 
@@ -170,7 +191,7 @@ namespace Game.Character
             {
                 yield return new WaitForSeconds(fallCheckInterval);
                 
-                if (!IsHealing && !IsFalling && transform.position.y < fallThreshold)
+                if (!IsHealing && !IsFalling && !IsDeathStunned && transform.position.y < fallThreshold)
                 {
                     Debug.Log($"{gameObject.name} is falling below threshold. Triggering respawn.");
                     IsFalling = true;
@@ -187,7 +208,7 @@ namespace Game.Character
 
         private void StartFallRespawn()
         {
-            ThrowHeldBall();
+            ForceThrowHeldBall();
             ResetCharacterCompletely();
             
             if (HasStateAuthority)
@@ -295,7 +316,7 @@ namespace Game.Character
 
         public void TakeDamage(float damage, PlayerController attacker = null)
         {
-            if (!HasStateAuthority || IsHealing || HasRespawnParry || IsFalling) return;
+            if (!HasStateAuthority || IsHealing || HasRespawnParry || IsFalling || IsDeathStunned) return;
             
             CurrentHealth -= damage;
             CurrentHealth = Mathf.Max(0, CurrentHealth);
@@ -304,14 +325,14 @@ namespace Game.Character
             if (CurrentHealth <= 0)
             {
                 NetworkId attackerId = attacker != null ? attacker.Object.Id : default(NetworkId);
-                RPC_StartHealing(attackerId);
+                RPC_StartDeathSequence(attackerId);
             }
         }
 
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-        private void RPC_StartHealing(NetworkId attackerId)
+        private void RPC_StartDeathSequence(NetworkId attackerId)
         {
-            if (IsHealing) return;
+            if (IsHealing || IsDeathStunned) return;
             
             PlayerController attacker = null;
             if (attackerId.IsValid)
@@ -321,22 +342,62 @@ namespace Game.Character
                     attacker = attackerObj.GetComponent<PlayerController>();
             }
             
-            StartHealing(attacker);
+            StartDeathSequence(attacker);
         }
 
-        private void StartHealing(PlayerController attacker)
+        private void StartDeathSequence(PlayerController attacker)
+        {
+            IsDeathStunned = true;
+            
+            // Play stun animation
+            if (mPlayerAnimation != null)
+            {
+                mPlayerAnimation.SetStunned(true);
+            }
+            
+            // Trigger defeated event
+            if (attacker != null)
+            {
+                OnPlayerDefeated?.Invoke(attacker, mPlayerController);
+            }
+            
+            // Force throw ball immediately
+            ForceThrowHeldBall();
+            
+            // Disable movement but keep animation playing
+            if (mMovement != null)
+                mMovement.enabled = false;
+            
+            if (HasStateAuthority)
+            {
+                mDeathStunCoroutine = StartCoroutine(DeathStunProcess());
+            }
+        }
+
+        private IEnumerator DeathStunProcess()
+        {
+            // Play death stun for specified duration
+            yield return new WaitForSeconds(deathStunDuration);
+            
+            IsDeathStunned = false;
+            
+            // Now start the healing process
+            RPC_StartHealing();
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        private void RPC_StartHealing()
+        {
+            StartHealing();
+        }
+
+        private void StartHealing()
         {
             if (IsHealing) return;
             
             IsHealing = true;
             mOriginalPosition = transform.position;
             
-            if (attacker != null)
-            {
-                OnPlayerDefeated?.Invoke(attacker, mPlayerController);
-            }
-            
-            ThrowHeldBall();
             ResetCharacterCompletely();
             
             // Only StateAuthority should handle position and healing logic
@@ -350,50 +411,51 @@ namespace Game.Character
                 
                 // Schedule animation reset
                 ForceResetAnimation = true;
+                ForceResetInput = true;
                 
                 TeleportToHealingZone();
                 mHealingCoroutine = StartCoroutine(HealingProcess());
             }
         }
 
-        private void ThrowHeldBall()
+        private void ForceThrowHeldBall()
         {
             var pickupAbility = GetComponent<PickUpAbility>();
+            var throwAbility = GetComponent<ThrowAbility>();
+            
             if (pickupAbility != null && pickupAbility.HasBall)
             {
                 // Find held ball and drop it
-                var ballTransform = mPlayerController.ballTransformHolder;
-                if (ballTransform != null && ballTransform.childCount > 0)
+                var ballController = mPlayerController.ball;
+                if (ballController != null )
                 {
-                    var ballObject = ballTransform.GetChild(0);
-                    var ballController = ballObject.GetComponent<BallController>();
                     
                     if (ballController != null && HasStateAuthority)
                     {
-                        // Calculate throw direction (away from player)
+                        // Force throw the ball
                         Vector3 throwDirection = transform.forward + Vector3.up * 0.3f;
                         throwDirection.Normalize();
                         
                         // Force throw the ball
                         ballController.Throw(throwDirection, 10f, gameObject);
                         
-                        // Schedule ball respawn after a delay
+                        // Schedule ball respawn
                         StartCoroutine(RespawnBallAfterDelay(ballController, 2f));
                         
                         Debug.Log($"Force threw ball from {gameObject.name}");
                     }
                 }
-                
-                // Reset pickup ability
-                var hasballProperty = pickupAbility.GetType().GetProperty("HasBall");
-                hasballProperty?.SetValue(pickupAbility, false);
-                
-                // Reset throw ability
-                var throwAbility = GetComponent<ThrowAbility>();
-                if (throwAbility != null)
-                {
-                    throwAbility.SetHeldBall(null);
-                }
+            }
+            
+            // Force clear ability states
+            if (pickupAbility != null)
+            {
+                pickupAbility.OnBallThrown();
+            }
+            
+            if (throwAbility != null)
+            {
+                throwAbility.SetHeldBall(null);
             }
         }
 
@@ -431,11 +493,7 @@ namespace Game.Character
                         rb.angularVelocity = Vector3.zero;
                     }
                     
-                    // Reset ball state
-                    var hasHitGroundField = typeof(BallController).GetField("hasHitGround", 
-                        System.Reflection.BindingFlags.Public | 
-                        System.Reflection.BindingFlags.Instance);
-                    hasHitGroundField?.SetValue(ballController, false);
+                    ballController.hasHitGround = false;
                     
                     Debug.Log($"Respawned ball at {spawnPosition}");
                 }
@@ -476,15 +534,6 @@ namespace Game.Character
             foreach (var ability in abilities)
             {
                 ability.enabled = false;
-                
-                // Reset specific ability states
-                if (ability is ThrowAbility throwAbility)
-                {
-                    var heldBallField = typeof(ThrowAbility).GetField("mHeldBall", 
-                        System.Reflection.BindingFlags.NonPublic | 
-                        System.Reflection.BindingFlags.Instance);
-                    heldBallField?.SetValue(throwAbility, null);
-                }
             }
         }
 
@@ -538,8 +587,20 @@ namespace Game.Character
                 }
             }
             
-            // Re-enable abilities
-            EnableAllAbilities();
+            // Re-initialize abilities with character type data
+            var abilities = GetComponents<BaseAbility>();
+            foreach (var ability in abilities)
+            {
+                ability.enabled = true;
+                if (ability != null && mPlayerController != null)
+                {
+                    ability.Initialize(
+                        mPlayerController.GetComponent<IInputService>(), 
+                        mStats, 
+                        mPlayerController.GetCharacterTypeSO()
+                    );
+                }
+            }
             
             // Re-enable UI buttons for local player
             if (Object.HasInputAuthority && !mPlayerController.IsNPC())
@@ -623,6 +684,7 @@ namespace Game.Character
                 if (animResetTimer >= animResetInterval)
                 {
                     ForceResetAnimation = true;
+                    ForceResetInput = true;
                     animResetTimer = 0f;
                 }
                 
@@ -757,18 +819,9 @@ namespace Game.Character
             HasRespawnParry = false;
         }
 
-        private void EnableAllAbilities()
-        {
-            var abilities = GetComponents<BaseAbility>();
-            foreach (var ability in abilities)
-            {
-                ability.enabled = true;
-            }
-        }
-
         public bool CanTakeDamage()
         {
-            return !IsHealing && !HasRespawnParry && !IsFalling;
+            return !IsHealing && !HasRespawnParry && !IsFalling && !IsDeathStunned;
         }
 
         private void UpdateHealthUI()

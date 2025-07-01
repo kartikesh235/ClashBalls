@@ -4,6 +4,7 @@ using Game.Input;
 using Game.Abilities;
 using Game.Character;
 using Game.AI;
+using Game.Ball;
 using Game.Managers;
 
 namespace Game.Controllers
@@ -16,6 +17,7 @@ namespace Game.Controllers
         private BaseAbility[] abilities;
 
         public Transform ballTransformHolder;
+        public BallController ball;
         
         private bool mHasRegisteredWithGameManager = false;
         
