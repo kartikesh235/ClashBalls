@@ -31,8 +31,8 @@ namespace Game.AI.Tasks
         [SharedRequired] public SharedBool buttonA, buttonB, buttonC, buttonD;
         
         [Header("World Boundaries")]
-        public float worldBoundaryX = 24f;
-        public float worldBoundaryZ = 24f;
+        public float worldBoundaryX = 26f;
+        public float worldBoundaryZ = 26f;
         
         [Header("Movement Smoothing")]
         public float movementSmoothTime = 0.3f;

@@ -24,6 +24,8 @@ namespace Game.Ball
         [Header("Ball Damage")]
         public float ballDamage = 25f;
         public bool hasHitGround = false;
+        public float ballHitStunDuration = 0.5f; // Add this field
+        
 
         public override void Spawned()
         {
@@ -101,7 +103,18 @@ namespace Game.Ball
         
                 if (healthSystem != null && healthSystem.CanTakeDamage())
                 {
+                    // Apply damage
                     healthSystem.TakeDamage(ballDamage, thrower);
+                    
+                    // Apply stun (only on StateAuthority)
+                    if (HasStateAuthority)
+                    {
+                        var stunSystem = player.GetComponent<StunSystem>();
+                        if (stunSystem != null)
+                        {
+                            stunSystem.ApplyStun(ballHitStunDuration);
+                        }
+                    }
             
                     // Add score to thrower
                     if (thrower != null)
