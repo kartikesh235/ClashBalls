@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69d9b2aa8a1442719f0abb7452276be7, type: 3}
   m_Name: NPCAISettings
   m_EditorClassIdentifier: 
-  ballDetectionRange: 20
-  enemyDetectionRange: 100
-  dangerDetectionRange: 4
-  tackleRange: 3
-  throwRange: 6
+  ballDetectionRange: 25
+  enemyDetectionRange: 120
+  dangerDetectionRange: 6
+  tackleRange: 4
+  throwRange: 12
   parryRange: 5
   dodgeChance: 0.5
   parryChance: 0.3

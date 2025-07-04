@@ -14,18 +14,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 5
   sprintSpeed: 7
+  maxHealth: 100
+  ballHitPower: 20
   maxStamina: 3
   staminaRegenRate: 1
   staminaRegenDelay: 1
-  dodgeSpeed: 10
+  dodgeDistance: 10
   sprintDodgeMultiplier: 1.5
+  dodgeCooldown: 1
+  dodgeStaminaCost: 1
   baseThrowForce: 10
   maxChargeThrowMultiplier: 2
   throwChargeSpeed: 1
-  parrySpeed: 1
-  failStunDuration: 0.5
-  tackleRange: 2
+  pickThrowCooldown: 1.5
+  parryDuration: 1
+  parryCooldown: 1.5
+  parryStaminaCost: 1
+  tackeTravelDistance: 2
   tackleForce: 20
   tackleCooldown: 1.5
   tackleStunDuration: 1
-  passive: 2
+  tackleStaminaCost: 1
+  tackleAttackPower: 20

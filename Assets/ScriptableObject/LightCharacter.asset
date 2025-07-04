@@ -35,4 +35,4 @@ MonoBehaviour:
   tackleCooldown: 1.5
   tackleStunDuration: 1
   tackleStaminaCost: 1
-  tackleAttackPower: 40
+  tackleAttackPower: 20

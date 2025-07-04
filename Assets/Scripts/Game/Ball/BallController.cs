@@ -49,7 +49,7 @@ namespace Game.Ball
             if (mTrail != null) mTrail.enabled = false;
             
             carrier.GetComponent<PlayerController>().ball = this;
-            //transform.SetParent(carrier.GetComponent<PlayerController>().ballTransformHolder);
+            transform.SetParent(carrier.GetComponent<PlayerController>().ballTransformHolder);
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;
             if (carrier.TryGetComponent(out ThrowAbility throwAbility))
