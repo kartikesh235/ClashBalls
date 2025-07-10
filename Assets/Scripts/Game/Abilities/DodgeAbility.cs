@@ -72,7 +72,7 @@ namespace Game.Abilities
 
             // Determine dodge direction based on input or random
             var dodgeDir = Random.value < 0.5f ? -transform.right : transform.right;
-
+            dodgeDir = transform.forward;
             // Raycast with small offset to avoid self-hit
             Vector3 origin = transform.position + dodgeDir * 0.1f;
             var physicsScene = Runner.GetPhysicsScene();
