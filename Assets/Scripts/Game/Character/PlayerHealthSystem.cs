@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using Game.Character;
 using Game.GameUI;
@@ -27,6 +28,8 @@ namespace Game.Character
         
         [Header("Healing Position")]
         public Transform healingPosition;
+
+        public List<Transform> healingPositions;
         
         [Header("Fallback Spawn")]
         public Vector3 fallbackSpawnPosition = Vector3.zero;
@@ -240,15 +243,37 @@ namespace Game.Character
             // Cache spawn points on spawn
             StartCoroutine(CacheSpawnPointsWithRetry());
             StartCoroutine(CacheBallSpawnPointsWithRetry());
-            
+            SetAllHealingZone();
             // Find healing position
             if (healingPosition == null)
             {
                 var healingZone = GameObject.FindGameObjectWithTag("HealingZone");
                 if (healingZone != null)
-                    healingPosition = healingZone.transform;
+                {
+                    healingPosition = GetRandomHealingPosition();
+                }
             }
         }
+
+        private void SetAllHealingZone()
+        {
+            healingPositions = new List<Transform>();
+            var healingZoneObjects = GameObject.FindGameObjectsWithTag("HealingZone");
+        }
+        
+        Transform GetRandomHealingPosition()
+        {
+            if (healingPositions.Count == 0)
+            {
+                Debug.LogWarning("No healing positions available, using fallback position.");
+                return null;
+            }
+            
+            int randomIndex = Random.Range(0, healingPositions.Count);
+            return healingPositions[randomIndex];
+        }
+        
+        
 
         private IEnumerator CacheSpawnPointsWithRetry()
         {
