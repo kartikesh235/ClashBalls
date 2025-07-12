@@ -362,6 +362,7 @@ namespace Game.Character
                 NetworkId attackerId = attacker != null ? attacker.Object.Id : default(NetworkId);
                 RPC_StartDeathSequence(attackerId);
             }
+            ForceThrowHeldBall(false);
         }
 
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
@@ -453,7 +454,7 @@ namespace Game.Character
             }
         }
 
-        private void ForceThrowHeldBall()
+        private void ForceThrowHeldBall(bool respawnBall= true )
         {
             var pickupAbility = GetComponent<PickUpAbility>();
             var throwAbility = GetComponent<ThrowAbility>();
@@ -464,7 +465,6 @@ namespace Game.Character
                 var ballController = mPlayerController.ball;
                 if (ballController != null )
                 {
-                    
                     if (ballController != null && HasStateAuthority)
                     {
                         // Force throw the ball
@@ -472,25 +472,17 @@ namespace Game.Character
                         throwDirection.Normalize();
                         
                         // Force throw the ball
-                        ballController.Throw(throwDirection, 10f, gameObject);
-                        
-                        // Schedule ball respawn
-                        StartCoroutine(RespawnBallAfterDelay(ballController, 2f));
+                        gameObject.GetComponent<ThrowAbility>().ExecuteThrow(0.1f);
+
+                        if (respawnBall)
+                        {
+                            // Schedule ball respawn
+                            StartCoroutine(RespawnBallAfterDelay(ballController, 2f));
+                        }
                         
                         Debug.Log($"Force threw ball from {gameObject.name}");
                     }
                 }
-            }
-            
-            // Force clear ability states
-            if (pickupAbility != null)
-            {
-                pickupAbility.OnBallThrown();
-            }
-            
-            if (throwAbility != null)
-            {
-                throwAbility.SetHeldBall(null);
             }
         }
 

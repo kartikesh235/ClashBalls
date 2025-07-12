@@ -114,7 +114,7 @@ namespace Game.Abilities
             ExecuteThrow(force);
         }
 
-        private void ExecuteThrow(float force)
+        public void ExecuteThrow(float force)
         {
             if (mHeldBall == null) return;
 

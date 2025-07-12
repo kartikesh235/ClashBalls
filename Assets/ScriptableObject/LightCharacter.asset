@@ -23,7 +23,7 @@ MonoBehaviour:
   sprintDodgeMultiplier: 1.2
   dodgeCooldown: 1
   dodgeStaminaCost: 1
-  baseThrowForce: 20
+  baseThrowForce: 30
   maxChargeThrowMultiplier: 2
   throwChargeSpeed: 1
   pickThrowCooldown: 1.5

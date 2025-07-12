@@ -100,11 +100,11 @@ namespace Game.AnimationControl
                         mAnim.SetFloat(RunMultiplier, 1.0f);
                     }
                     SetLocomotionState(mInput.Movement.x, mInput.Movement.y);
-                    Debug.LogError("mInput.Movement.x" +mInput.Movement.x + "mInput.Movement.x " + mInput.Movement.y + " " + mInput.Sprint);
+//                    Debug.LogError("mInput.Movement.x" +mInput.Movement.x + "mInput.Movement.x " + mInput.Movement.y + " " + mInput.Sprint);
                 }
                 else if (mInput == null)
                 {
-                    Debug.LogWarning($"PlayerAnimation {gameObject.name}: Input service is null!");
+                  //  Debug.LogWarning($"PlayerAnimation {gameObject.name}: Input service is null!");
                 }
             }
 

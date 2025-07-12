@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -48,9 +49,14 @@ namespace Game.GameUI
 
         private void Update()
         {
-            LookAtCamera();
+           
             UpdateHealthUI();
             UpdateStaminaUI();
+        }
+
+        private void LateUpdate()
+        {
+            LookAtCamera();
         }
 
         private void LookAtCamera()
