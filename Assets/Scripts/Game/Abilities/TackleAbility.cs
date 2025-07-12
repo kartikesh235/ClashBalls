@@ -156,7 +156,7 @@ namespace Game.Abilities
             }
 
             // Apply consistent force regardless of network authority
-            ApplyConsistentForce(targetObj, direction, force);
+           // ApplyConsistentForce(targetObj, direction, force);
 
             // Apply stun only on StateAuthority to avoid duplication
             if (HasStateAuthority)
@@ -184,7 +184,7 @@ namespace Game.Abilities
             {
                 // Force consistency: Use VelocityChange for immediate effect
                 Vector3 forceVector = direction.normalized * force;
-                networkRb.Rigidbody.AddForce(forceVector, ForceMode.VelocityChange);
+                networkRb.Rigidbody.AddForce(forceVector, ForceMode.Impulse);
                 
                 Debug.Log($"Applied consistent tackle force {force} to {target.name} (NetworkRB)");
                 return;
@@ -195,7 +195,7 @@ namespace Game.Abilities
             if (rb != null)
             {
                 Vector3 forceVector = direction.normalized * force;
-                rb.AddForce(forceVector, ForceMode.VelocityChange);
+                rb.AddForce(forceVector, ForceMode.Impulse);
                 
                 Debug.Log($"Applied consistent tackle force {force} to {target.name} (Regular RB)");
             }

@@ -91,6 +91,8 @@ namespace Game.Character
             {
                 mFallCheckCoroutine = StartCoroutine(FallDetectionCoroutine());
             }
+
+            gameObject.GetComponent<Rigidbody>().linearDamping = 6;
         }
 
         public override void FixedUpdateNetwork()
@@ -259,6 +261,14 @@ namespace Game.Character
         {
             healingPositions = new List<Transform>();
             var healingZoneObjects = GameObject.FindGameObjectsWithTag("HealingZone");
+            foreach (var zone in healingZoneObjects)
+            {
+                var healingTransform = zone.transform;
+                if (healingTransform != null)
+                {
+                    healingPositions.Add(healingTransform);
+                }
+            }
         }
         
         Transform GetRandomHealingPosition()

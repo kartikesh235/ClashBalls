@@ -31,7 +31,7 @@ MonoBehaviour:
   parryCooldown: 1.5
   parryStaminaCost: 1
   tackeTravelDistance: 10
-  tackleForce: 5
+  tackleForce: 0
   tackleCooldown: 1.5
   tackleStunDuration: 1
   tackleStaminaCost: 1
